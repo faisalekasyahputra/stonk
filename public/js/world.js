@@ -16,7 +16,7 @@ const WATER = new THREE.Color(0x2f7fd4);
 const TRUNK = new THREE.Color(0x8a5a2b);
 const LEAF = new THREE.Color(0x2f9b28);
 
-const SKY = 0x63b8f0;
+const SKY = 0x0e2244; // navy, matches the market-board sky
 const ISLAND = 46; // grass reaches this far, then falls to the shore
 const SHORE = 62; // past here the ground is under water
 
@@ -128,6 +128,10 @@ function groundTexture() {
  *
  * Clouds that cross the seam are drawn twice so the tile wraps without a join.
  */
+// The sky is a giant US stock-market board: navy gradient, price grid, a
+// candlestick tape and a rising orange trend line -- the stonks sky. The chart
+// data is a random walk that is detrended to close the loop, so the texture
+// still tiles seamlessly around the dome and keeps the slow drift animation.
 function skyTexture() {
 	if (typeof document === "undefined") return null;
 	const w = 1024;
@@ -138,9 +142,9 @@ function skyTexture() {
 	const ctx = canvas.getContext("2d");
 
 	const sky = ctx.createLinearGradient(0, 0, 0, h);
-	sky.addColorStop(0, "#1f6fd0"); // zenith
-	sky.addColorStop(0.55, "#63b8f0");
-	sky.addColorStop(1, "#cdeaff"); // horizon haze
+	sky.addColorStop(0, "#081226"); // zenith, deep navy
+	sky.addColorStop(0.7, "#0e2244");
+	sky.addColorStop(1, "#1b3a6b"); // horizon glow
 	ctx.fillStyle = sky;
 	ctx.fillRect(0, 0, w, h);
 
@@ -150,31 +154,74 @@ function skyTexture() {
 		return seed / 2147483647;
 	};
 
-	const puff = (x, y, r, alpha) => {
-		const g = ctx.createRadialGradient(x, y, r * 0.15, x, y, r);
-		g.addColorStop(0, `rgba(255,255,255,${alpha})`);
-		g.addColorStop(0.6, `rgba(255,255,255,${alpha * 0.75})`);
-		g.addColorStop(1, "rgba(255,255,255,0)");
-		ctx.fillStyle = g;
+	// Price grid
+	ctx.strokeStyle = "rgba(120,160,220,0.14)";
+	ctx.lineWidth = 1;
+	for (let y = 40; y < h; y += 56) {
 		ctx.beginPath();
-		ctx.arc(x, y, r, 0, Math.PI * 2);
-		ctx.fill();
-	};
-
-	for (let i = 0; i < 26; i++) {
-		const cx = rand() * w;
-		const cy = h * (0.18 + rand() * 0.5);
-		const scale = 26 + rand() * 46;
-		const alpha = 0.65 + rand() * 0.3;
-		for (let k = 0; k < 6; k++) {
-			const dx = (k - 2.5) * scale * 0.52 + (rand() - 0.5) * scale * 0.4;
-			const dy = (rand() - 0.5) * scale * 0.45;
-			const r = scale * (0.6 + rand() * 0.6);
-			puff(cx + dx, cy + dy, r, alpha);
-			if (cx + dx < r) puff(cx + dx + w, cy + dy, r, alpha);
-			if (cx + dx > w - r) puff(cx + dx - w, cy + dy, r, alpha);
-		}
+		ctx.moveTo(0, y);
+		ctx.lineTo(w, y);
+		ctx.stroke();
 	}
+	for (let x = 0; x < w; x += 64) {
+		ctx.beginPath();
+		ctx.moveTo(x, 0);
+		ctx.lineTo(x, h);
+		ctx.stroke();
+	}
+
+	// Candlesticks from a loop-closed random walk (upward bias baked out so
+	// the last candle meets the first across the seam).
+	const N = 32;
+	const step = w / N;
+	const walk = [0];
+	for (let i = 1; i <= N; i++) walk.push(walk[i - 1] + (rand() - 0.44) * 46);
+	const drift = walk[N] / N;
+	const vals = walk.map((v, i) => v - drift * i); // vals[0] === vals[N]
+	const mid = h * 0.52;
+	for (let i = 0; i < N; i++) {
+		const open = mid - vals[i];
+		const close = mid - vals[i + 1];
+		const up = close < open;
+		const x = i * step + step * 0.5;
+		const top = Math.min(open, close);
+		const body = Math.max(6, Math.abs(close - open));
+		ctx.strokeStyle = up ? "rgba(46,204,113,0.8)" : "rgba(231,76,60,0.8)";
+		ctx.fillStyle = up ? "rgba(46,204,113,0.65)" : "rgba(231,76,60,0.65)";
+		ctx.lineWidth = 2;
+		ctx.beginPath(); // wick
+		ctx.moveTo(x, top - 8 - rand() * 18);
+		ctx.lineTo(x, top + body + 8 + rand() * 18);
+		ctx.stroke();
+		ctx.fillRect(x - step * 0.28, top, step * 0.56, body);
+	}
+
+	// The stonks trend line: the same closed loop, drawn glowing orange.
+	ctx.strokeStyle = "rgba(255,150,40,0.9)";
+	ctx.lineWidth = 5;
+	ctx.shadowColor = "rgba(255,150,40,0.8)";
+	ctx.shadowBlur = 12;
+	ctx.beginPath();
+	for (let i = 0; i <= N; i++) {
+		const x = i * step;
+		const y = mid - vals[i] - 26;
+		i ? ctx.lineTo(x, y) : ctx.moveTo(x, y);
+	}
+	ctx.stroke();
+	ctx.shadowBlur = 0;
+
+	// Ticker band along the top, like the exchange wall.
+	ctx.font = "bold 26px monospace";
+	const tickers = [
+		["S&P 500  6,412.19  +1.42%", "#2ecc71"],
+		["NASDAQ  21,880.42  +2.03%", "#2ecc71"],
+		["DOW  44,318.55  -0.31%", "#e74c3c"],
+		["$STONK  0.0029  +70.2%", "#ffb028"],
+	];
+	tickers.forEach(([text, color], i) => {
+		ctx.fillStyle = color;
+		ctx.fillText(text, (i * w) / tickers.length + 12, 34);
+	});
 
 	const tex = new THREE.CanvasTexture(canvas);
 	tex.wrapS = THREE.RepeatWrapping;
