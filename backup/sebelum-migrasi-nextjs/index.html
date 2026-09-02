@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html lang="en">
+
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>PILLONG - Long Pill Dick of Alon</title>
+
+        <!-- Favicon -->
+        <link rel="icon" href="assets/favico/favicon.ico" sizes="any">
+        <link rel="icon" href="assets/favico/favicon-16x16.png" type="image/png" sizes="16x16">
+        <link rel="icon" href="assets/favico/favicon-32x32.png" type="image/png" sizes="32x32">
+
+        <!-- Open Graph Meta Tags -->
+        <meta property="og:title" content="PILLONG - Long Pill Dick of Alon">
+        <meta property="og:description" content="Meet PILLONG - long pill dick of alon whose penis size changes based on token market cap! Watch it grow and shrink in real-time.">
+        <meta property="og:image" content="assets/banner.png">
+        <meta property="og:type" content="website">
+
+        <!-- Custom Fonts -->
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Jost:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+
+        <!-- Byrd Font -->
+        <style>
+            @font-face {
+                font-family: 'Byrd';
+                src: url('assets/font/byrd-regular.ttf') format('truetype');
+                font-weight: normal;
+                font-style: normal;
+            }
+
+            @font-face {
+                font-family: 'Byrd';
+                src: url('assets/font/byrd-bold.ttf') format('truetype');
+                font-weight: bold;
+                font-style: normal;
+            }
+        </style>
+
+        <!-- Google Material Icons -->
+        <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+        <!-- FontAwesome Icons -->
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+        <style>
+            :root {
+                --background-dark: #15161b;
+                --surface-dark: #1E1E1E;
+                --accent-yellow: #86efac;
+                --text-light: #FFFFFF;
+                --text-dark: #121212;
+                --shadow-color: rgba(0, 0, 0, 0.5);
+                --highlight-color: rgba(134, 239, 172, 0.2);
+            }
+
+            body {
+                margin: 0;
+                background-color: var(--background-dark);
+                color: var(--text-light);
+                font-family: 'Byrd', 'Jost', sans-serif;
+            }
+
+            canvas {
+                display: block;
+            }
+
+            /* --- Base Panel Style (Neumorphic) --- */
+            .neo-panel {
+                background: var(--surface-dark);
+                border-radius: 20px;
+                border: 1px solid var(--accent-yellow);
+                box-shadow:
+                    5px 5px 10px var(--shadow-color),
+                    inset 2px 2px 5px var(--highlight-color),
+                    inset -2px -2px 5px var(--shadow-color);
+                padding: 2px;
+            }
+
+            .neo-title-bar {
+                padding: 6px 10px;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                color: var(--accent-yellow);
+                font-weight: bold;
+                font-size: 14px;
+                border-bottom: 1px solid var(--accent-yellow);
+            }
+
+            .flat-data-box i {
+                margin-right: 6px;
+                color: var(--accent-yellow);
+                font-size: 12px;
+            }
+
+            .neo-button i {
+                margin-right: 6px;
+                font-size: 12px;
+            }
+
+            #ca-box i {
+                margin-right: 6px;
+                color: var(--accent-yellow);
+                font-size: 12px;
+            }
+
+            .neo-content {
+                padding: 10px;
+                font-size: 13px;
+                line-height: 1.4;
+            }
+
+            .neo-button {
+                background: var(--surface-dark);
+                border: 1px solid var(--accent-yellow);
+                color: var(--accent-yellow);
+                border-radius: 10px;
+                box-shadow: 3px 3px 6px var(--shadow-color), -3px -3px 6px rgba(255, 255, 255, 0.05);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-weight: bold;
+                cursor: pointer;
+                transition: all 0.2s ease-in-out;
+            }
+
+            .neo-button:active {
+                box-shadow: inset 3px 3px 6px var(--shadow-color), inset -3px -3px 6px rgba(255, 255, 255, 0.05);
+                font-size: 0.9em;
+            }
+
+            .neo-title-buttons .neo-button {
+                width: 20px;
+                height: 20px;
+                margin-left: 5px;
+            }
+
+            /* Top Info Bar */
+            #top-info-bar {
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 10px 20px;
+                background: transparent;
+                z-index: 2000;
+                font-family: 'Byrd', 'Jost', sans-serif;
+            }
+
+            .flat-data-box {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                text-align: center;
+                min-width: 80px;
+                padding: 8px 12px;
+                background: transparent;
+                border: none;
+                border-radius: 8px;
+                transition: all 0.3s ease;
+            }
+
+            .flat-data-box:hover {
+                background: rgba(134, 239, 172, 0.1);
+                transform: translateY(-2px);
+            }
+
+            .flat-data-box span:first-child {
+                font-size: 12px;
+                color: var(--accent-yellow);
+                font-weight: bold;
+                text-transform: uppercase;
+                margin-bottom: 4px;
+            }
+
+            .flat-data-box span:last-child {
+                font-size: 16px;
+                color: var(--text-light);
+                font-weight: bold;
+            }
+
+            .custom-font {
+                font-family: 'Byrd', 'Jost', sans-serif;
+                font-weight: bold;
+            }
+
+            .flash-red {
+                color: #ff6b6b !important;
+                animation: flash-red 0.7s ease-out;
+            }
+
+            @keyframes flash-red {
+                0% {
+                    background-color: transparent;
+                }
+
+                50% {
+                    background-color: rgba(255, 107, 107, 0.2);
+                }
+
+                100% {
+                    background-color: transparent;
+                }
+            }
+
+            /* Responsive Design */
+            @media (max-width: 768px) {
+                #top-info-bar {
+                    padding: 8px 10px;
+                    flex-wrap: wrap;
+                    gap: 8px;
+                }
+
+                .flat-data-box {
+                    min-width: 70px;
+                    padding: 6px 8px;
+                    flex: 1;
+                }
+
+                .flat-data-box span:first-child {
+                    font-size: 10px;
+                }
+
+                .flat-data-box span:last-child {
+                    font-size: 14px;
+                }
+            }
+
+            @media (max-width: 480px) {
+                #top-info-bar {
+                    padding: 6px 8px;
+                }
+
+                .flat-data-box {
+                    min-width: 60px;
+                    padding: 4px 6px;
+                }
+
+                .flat-data-box span:first-child {
+                    font-size: 9px;
+                }
+
+                .flat-data-box span:last-child {
+                    font-size: 12px;
+                }
+            }
+
+            /* Adjust other panels to account for top bar */
+            .neo-panel {
+                top: 60px;
+            }
+
+            #rotation-toggle {
+                bottom: 10px;
+                right: 10px;
+            }
+
+            #social-links {
+                bottom: 10px;
+                left: 10px;
+            }
+
+            /* --- Pop-up Panel --- */
+            #info-panel {
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                width: 350px;
+                z-index: 1000;
+            }
+
+            #info-panel .neo-content {
+                text-align: center;
+            }
+
+            #info-panel h2 {
+                margin-top: 0;
+                font-size: 24px;
+                color: var(--accent-yellow);
+            }
+
+            #info-panel .highlight {
+                color: var(--accent-yellow);
+            }
+
+            /* --- Layout Positions --- */
+            #size-info-window,
+            #token-info-window {
+                position: absolute;
+                top: 10px;
+                width: 280px;
+                z-index: 1000;
+            }
+
+            #size-info-window {
+                left: 10px;
+            }
+
+            #token-info-window {
+                right: 10px;
+            }
+
+            /* Top-Center Bar */
+            #top-info-bar {
+                position: absolute;
+                top: 10px;
+                left: 50%;
+                transform: translateX(-50%);
+                display: flex;
+                justify-content: center;
+                z-index: 1001;
+                gap: 15px;
+            }
+
+            .flat-data-box {
+                background: var(--surface-dark);
+                border: 1px solid var(--accent-yellow);
+                border-radius: 15px;
+                padding: 8px 20px;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                font-weight: bold;
+                color: var(--text-light);
+                font-size: 18px;
+                box-shadow:
+                    3px 3px 8px var(--shadow-color),
+                    inset 1px 1px 3px var(--highlight-color);
+            }
+
+            .flat-data-box .custom-font {
+                font-family: 'Crashnumberinggothic', sans-serif;
+                font-size: 20px;
+            }
+
+            /* Bottom CA Box */
+            #ca-box {
+                position: absolute;
+                bottom: 10px;
+                left: 50%;
+                transform: translateX(-50%);
+                z-index: 1000;
+                background: var(--surface-dark);
+                border: 1px solid var(--accent-yellow);
+                border-radius: 15px;
+                padding: 10px 15px;
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                font-weight: bold;
+                color: var(--text-light);
+                font-size: 16px;
+                box-shadow: 3px 3px 8px var(--shadow-color);
+            }
+
+            #copy-ca-button {
+                width: 30px;
+                height: 30px;
+            }
+
+            /* Rotation Toggle */
+            #rotation-toggle {
+                position: absolute;
+                bottom: 10px;
+                right: 10px;
+                padding: 10px 20px;
+                z-index: 1000;
+            }
+
+            /* --- Utility & Animations --- */
+            .status-dot {
+                width: 10px;
+                height: 10px;
+                border-radius: 50%;
+                display: inline-block;
+                margin-right: 8px;
+                border: 1px solid rgba(0, 0, 0, 0.5);
+            }
+
+            .status-online {
+                background-color: #00ff00;
+            }
+
+            .status-offline {
+                background-color: #ff0000;
+            }
+
+            @keyframes flash-yellow {
+                0% {
+                    background-color: var(--highlight-color);
+                }
+
+                100% {
+                    background-color: transparent;
+                }
+            }
+
+            .flash-green {
+                animation: flash-yellow 0.7s ease-out;
+            }
+
+            .flash-red {
+                animation: flash-yellow 0.7s ease-out;
+            }
+
+            .neo-content h2 img {
+                vertical-align: middle;
+                margin-right: 8px;
+                width: 28px;
+                height: 28px;
+            }
+
+            .neo-content .material-icons {
+                vertical-align: middle;
+                margin-right: 4px;
+            }
+
+            @font-face {
+                font-family: 'Crashnumberinggothic';
+                src: url('assets/font/Crashnumberinggothic.ttf') format('truetype');
+            }
+
+            /* Social Links Container */
+            #social-links {
+                position: absolute;
+                bottom: 10px;
+                left: 10px;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                z-index: 1000;
+            }
+
+            /* Base Social Button Styles */
+            .social-button {
+                width: 50px;
+                height: 50px;
+                padding: 8px;
+                border-radius: 12px;
+                text-decoration: none;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                box-sizing: border-box;
+                transition: all 0.3s ease;
+                cursor: pointer;
+            }
+
+            /* Hover Effects */
+            .social-button:hover {
+                transform: translateY(-2px);
+                box-shadow:
+                    0 8px 16px rgba(0, 0, 0, 0.3),
+                    inset 0 0 20px rgba(134, 239, 172, 0.1);
+                border-color: #86efac;
+            }
+
+            .social-button:hover svg {
+                fill: var(--accent-yellow);
+                /* Change SVG fill to accent green on hover */
+            }
+
+            .social-button:hover span {
+                color: var(--accent-yellow);
+                /* Change text color to accent green on hover */
+            }
+
+            .social-button:active {
+                transform: translateY(0);
+                box-shadow:
+                    inset 3px 3px 6px rgba(0, 0, 0, 0.3),
+                    inset -3px -3px 6px rgba(255, 255, 255, 0.05);
+            }
+
+            /* Twitter Buttons */
+            .social-button:not(#buy-link) {
+                width: 50px;
+            }
+
+            /* Buy Button Specific */
+            #buy-link {
+                width: 90px;
+                height: 50px;
+                flex-direction: row;
+                gap: 8px;
+                padding: 8px 12px;
+                align-items: center;
+                justify-content: center;
+            }
+
+            /* Special Hover Effect for Buy Button */
+            #buy-link:hover {
+                background: linear-gradient(135deg, rgba(134, 239, 172, 0.1), rgba(134, 239, 172, 0.2));
+                border-color: #86efac;
+            }
+
+            /* Icons */
+            .social-button svg {
+                width: 20px;
+                height: 20px;
+                flex-shrink: 0;
+                fill: var(--text-light);
+                /* Set default color to white */
+                transition: fill 0.3s ease;
+            }
+
+            .social-button img {
+                width: 20px;
+                height: 20px;
+                flex-shrink: 0;
+            }
+
+            /* Buy Button Icon - Keep Original Colors */
+            #buy-link img {
+                filter: none;
+            }
+
+            /* Text */
+            .social-button span {
+                text-transform: uppercase;
+                text-decoration: none;
+                font-size: 16px;
+                line-height: 20px;
+                font-weight: bold;
+                margin-left: 8px;
+                color: var(--text-light);
+                /* Set default color to white */
+                transition: color 0.3s ease;
+            }
+
+            /* --- Responsive Design --- */
+            @media (max-width: 870px) {
+                #top-info-bar {
+                    flex-direction: column;
+                    align-items: center;
+                    gap: 10px;
+                    transform: translateX(0);
+                    left: 0;
+                    right: 0;
+                }
+
+                #size-info-window,
+                #token-info-window {
+                    display: none;
+                }
+            }
+        </style>
+
+        <!-- Importmap to handle module loading from CDNs -->
+        <script type="importmap">
+    {
+        "imports": {
+            "three": "https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.module.js",
+            "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.128.0/examples/jsm/",
+            "lil-gui": "https://cdn.jsdelivr.net/npm/lil-gui@0.19/dist/lil-gui.esm.js"
+        }
+    }
+    </script>
+    </head>
+
+    <body>
+
+        <!-- Top Info Bar -->
+        <div id="top-info-bar">
+            <div class="flat-data-box">
+                <span><i class="fas fa-ruler-vertical"></i> Size:</span>
+                <span id="size-only-value"><span class="custom-font">26.3</span> cm</span>
+            </div>
+            <div class="flat-data-box">
+                <span><i class="fas fa-chart-line"></i> MC:</span>
+                <span id="market-cap-only-value" class="flash-red">$ <span class="custom-font">16.275,2</span></span>
+            </div>
+            <div class="flat-data-box">
+                <span><i class="fas fa-dollar-sign"></i> Price:</span>
+                <span id="price-only-value" class="flash-red">$ <span class="custom-font">0.00001627</span></span>
+            </div>
+        </div>
+
+        <!-- Size Panel (Top Left) -->
+        <div id="size-info-window" class="neo-panel">
+            <div class="neo-title-bar">
+                <span><i class="fas fa-ruler-vertical"></i> Size Information</span>
+            </div>
+            <div id="size-info" class="neo-content">
+                <span class="material-icons">straighten</span> Auto Size: MC<br>
+                Size: <span id="penis-size">-- cm (-- inch)</span><br>
+                MC: <span id="penis-mc">--</span>
+                (<span id="penis-change">--%</span>)
+            </div>
+        </div>
+
+        <!-- Token Info Panel (Top Right) -->
+        <div id="token-info-window" class="neo-panel">
+            <div class="neo-title-bar">
+                <span><i class="fas fa-coins"></i> Token Information</span>
+            </div>
+            <div id="market-cap-display" class="neo-content">
+                <div><strong><span id="token-name">--</span></strong></div>
+                <div>24h Volume: <span id="token-volume">--</span></div>
+                <div>24h: <span id="token-change">--</span></div>
+                <div style="font-size: 14px;">Update: <span id="update-time">--</span></div>
+                <div id="countdown" style="font-size: 14px; color: var(--accent-yellow);">Next update: 5s</div>
+                <div id="connection-status" style="font-size: 12px;">
+                    <span class="status-dot"></span>
+                    <span id="connection-label">Connecting...</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Central info panel (Welcome Popup) -->
+        <div id="info-panel" class="neo-panel">
+            <div class="neo-title-bar">
+                <span><i class="fas fa-hand-wave"></i> Welcome!</span>
+                <div class="neo-title-buttons">
+                    <div id="close-info" class="neo-button">X</div>
+                </div>
+            </div>
+            <div class="neo-content">
+                <h2><img src="assets/favico/favicon-32x32.png" alt="Pillong Icon"> Meet PILLONG!</h2>
+                <p>This is <span class="highlight">PILLONG</span> - long pill dick of alon whose penis size automatically adjusts based on the token's <span class="highlight">Market Cap</span>!</p>
+                <p><span class="material-icons">trending_up</span> <strong>Higher MC = Bigger Penis</strong></p>
+                <p><span class="material-icons">trending_down</span> <strong>Lower MC = Smaller Penis</strong></p>
+            </div>
+        </div>
+
+        <!-- Rotation Toggle Button -->
+        <div id="rotation-toggle" class="neo-button"><i class="fas fa-sync-alt"></i> Disable rotation</div>
+
+        <!-- Social Links Panel (Bottom Left) -->
+        <div id="social-links">
+            <a href="#" class="neo-button social-button" id="twitter-link-1" target="_blank" rel="noopener noreferrer">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="white">
+                    <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+                </svg>
+            </a>
+            <a href="#" class="neo-button social-button" id="community-link" target="_blank" rel="noopener noreferrer">
+                <svg width="24" height="24" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path opacity="0.991" fill-rule="evenodd" clip-rule="evenodd" d="M43.5021 29.4991C65.4655 27.6982 75.9655 37.6982 75.0021 59.4991C71.7901 72.2093 63.6234 78.876 50.5021 79.4991C29.7982 76.6096 21.9648 64.943 27.0021 44.4991C30.1922 36.8419 35.6922 31.8419 43.5021 29.4991Z" fill="white" />
+                    <path opacity="0.992" fill-rule="evenodd" clip-rule="evenodd" d="M144.503 29.4996C170.537 28.8969 180.37 41.2302 174.003 66.4996C164.015 80.1206 151.515 82.9539 136.503 74.9996C125.843 65.1712 123.677 53.6712 130.003 40.4996C133.86 35.4674 138.693 31.8007 144.503 29.4996Z" fill="white" />
+                    <path opacity="0.993" fill-rule="evenodd" clip-rule="evenodd" d="M95.5012 48.4998C113.389 47.5965 123.723 55.9299 126.501 73.4998C123.864 92.8263 112.864 100.993 93.5012 97.9998C76.5653 90.2812 71.732 77.7812 79.0012 60.4998C83.2346 54.6447 88.7346 50.6447 95.5012 48.4998Z" fill="white" />
+                    <path opacity="0.99" fill-rule="evenodd" clip-rule="evenodd" d="M138.5 83.5003C166.228 82.064 183.728 94.7307 191 121.5C193.315 130.69 194.482 140.024 194.5 149.5C183.5 149.5 172.5 149.5 161.5 149.5C158.179 128.501 148.012 111.835 131 99.5003C131.621 93.2596 134.121 87.9262 138.5 83.5003Z" fill="white" />
+                    <path opacity="0.994" fill-rule="evenodd" clip-rule="evenodd" d="M49.5016 83.4992C54.9318 83.1602 60.2652 83.6602 65.5016 84.9992C67.9051 88.9729 69.9051 93.1396 71.5016 97.4992C71.4728 99.0285 70.8061 100.195 69.5016 100.999C53.3496 113.113 43.683 129.279 40.5016 149.499C29.5016 149.499 18.5016 149.499 7.50157 149.499C6.68212 129.753 12.1822 112.086 24.0016 96.4992C31.4289 89.8696 39.9289 85.5362 49.5016 83.4992Z" fill="white" />
+                    <path opacity="0.996" fill-rule="evenodd" clip-rule="evenodd" d="M97.4982 102.501C113.722 101.864 126.888 107.864 136.998 120.501C148.015 136.059 152.848 153.392 151.498 172.501C117.831 172.501 84.1649 172.501 50.4982 172.501C49.2298 153.904 53.7298 136.904 63.9982 121.501C72.5671 110.307 83.7338 103.974 97.4982 102.501Z" fill="white" />
+                </svg>
+            </a>
+            <a href="#" class="neo-button social-button" id="buy-link" target="_blank" rel="noopener noreferrer">
+                <img src="assets/pump.webp" alt="Buy on Pump.fun">
+                <span>BUY</span>
+            </a>
+        </div>
+
+        <!-- CA Copy Box -->
+        <div id="ca-box">
+            <span><i class="fas fa-copy"></i> CA: <span id="ca-box-address">--</span></span>
+            <div id="copy-ca-button" class="neo-button">
+                <svg xmlns="http://www.w.org/2000/svg" width="16" height="16" fill="white" viewBox="0 0 16 16">
+                    <path d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1h1a1 1 0 0 1 1 1V14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1h1v-1z"></path>
+                    <path d="M9.5 1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5h3zm-3-1A1.5 1.5 0 0 0 5 1.5v1A1.5 1.5 0 0 0 6.5 4h3A1.5 1.5 0 0 0 11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3z"></path>
+                </svg>
+            </div>
+        </div>
+
+        <!-- Main entry point for the application -->
+        <script type="module" src="js/main.js?v=20241220-21"></script>
+    </body>
+
+</html>

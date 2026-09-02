@@ -1,0 +1,158 @@
+<!-- Background Title behind 3D Object -->
+<h1 class="bg-title">STONK</h1>
+
+<!-- Desktop Icons -->
+<div class="desktop-icons">
+    <div class="desktop-icon" onclick="window.open('https://twitter.com/orangutansol', '_blank')">
+        <i class="fa-brands fa-x-twitter" style="color: #fff;"></i>
+        <span>X</span>
+    </div>
+    <div class="desktop-icon" onclick="window.open('https://t.me/orangutan_portal', '_blank')">
+        <i class="fas fa-users" style="color: #fff;"></i>
+        <span>Community</span>
+    </div>
+    <div class="desktop-icon" onclick="toggleWindow('twitter-panel')">
+        <i class="fas fa-robot" style="color: #fff;"></i>
+        <span>Post Twitter</span>
+    </div>
+    <div class="desktop-icon" id="chart-icon" style="display:none;">
+        <i class="fas fa-chart-line" style="color: #fff;"></i>
+        <span>Chart</span>
+    </div>
+    <div class="desktop-icon" id="buy-icon" onclick="window.open('https://pump.fun', '_blank')">
+        <img src="assets/pump.webp" style="width: 32px; height: 32px;">
+        <span>Buy $STONK</span>
+    </div>
+</div>
+
+<!-- Windows XP Taskbar -->
+<div class="xp-taskbar">
+    <div class="xp-start-btn" id="start-btn">
+        <img src="assets/favico/favicon-16x16.png" alt="start">
+        start
+    </div>
+    <div class="xp-task-items">
+        <div class="xp-task-item" onclick="toggleWindow('size-info-window')">
+            <i class="fas fa-ruler-vertical"></i> <span id="taskbar-size">Size: -- cm</span>
+        </div>
+        <div class="xp-task-item" onclick="toggleWindow('token-info-window')">
+            <i class="fas fa-coins"></i> <span id="taskbar-mc">MC: $--</span>
+        </div>
+        <div class="xp-task-item" id="ca-display" style="cursor: pointer; border: 1px solid #ffffff55;" title="Click to copy CA">
+            <i class="fas fa-key"></i> <span id="taskbar-ca">CA: 2ADR...pump</span>
+            <span id="ca-box-address" style="display:none;">2ADR43Dcecc7HQPBKPcKKHBN5BjfWvPpFo483bjzpump</span>
+        </div>
+    </div>
+    <div class="xp-system-tray">
+        <div class="xp-tray-clock" id="taskbar-clock">12:00 PM</div>
+    </div>
+</div>
+
+<!-- Start Menu -->
+<div id="start-menu">
+    <div class="start-menu-header">
+        <img src="assets/favico/favicon-32x32.png" alt="user">
+        Stonk User
+    </div>
+    <div class="start-menu-links">
+        <a href="https://twitter.com/orangutansol" target="_blank" class="start-link">
+            <i class="fa-brands fa-x-twitter" style="color: #000;"></i> X
+        </a>
+        <a href="https://t.me/orangutan_portal" target="_blank" class="start-link">
+            <i class="fas fa-users" style="color: #4b2c20;"></i> Community
+        </a>
+        <a href="https://pump.fun" target="_blank" class="start-link">
+            <img src="assets/pump.webp" style="width: 16px; height: 16px;"> Buy on Pump.fun
+        </a>
+        <div style="border-top: 1px solid #ddd; margin: 5px 0;"></div>
+        <a href="#" class="start-link" id="start-about">
+            <i class="fas fa-info-circle"></i> About Stonk
+        </a>
+        <a href="#" class="start-link" onclick="location.reload()">
+            <i class="fas fa-power-off"></i> Turn Off PC
+        </a>
+    </div>
+</div>
+
+<!-- Size Information Window -->
+<div id="size-info-window" class="xp-window" style="top: 220px; right: 20px; left: auto; width: 280px;">
+    <div class="xp-title-bar">
+        <div class="xp-title-bar-text">
+            <i class="fas fa-ruler-vertical"></i> Size Monitor
+        </div>
+        <div class="xp-window-controls">
+            <div class="xp-btn" onclick="toggleWindow('size-info-window')">_</div>
+            <div class="xp-btn">[]</div>
+            <div class="xp-btn xp-btn-close" onclick="toggleWindow('size-info-window')">X</div>
+        </div>
+    </div>
+    <div class="xp-content" id="size-info">
+        Size: <span id="penis-size">-- cm</span><br>
+        MC: <span id="penis-mc">--</span>
+        (<span id="penis-change">--%</span>)
+        <div style="display:none;" id="size-only-value"></div>
+        <div style="margin-top: 10px; text-align: center;">
+            <button id="rotation-toggle" style="padding: 2px 10px; cursor: pointer; font-family: 'MS Sans Serif', Arial; font-size: 11px;">Disable rotation</button>
+        </div>
+    </div>
+</div>
+
+<!-- Token Information Window -->
+<div id="token-info-window" class="xp-window" style="top: 20px; right: 20px; width: 280px;">
+    <div class="xp-title-bar">
+        <div class="xp-title-bar-text">
+            <i class="fas fa-coins"></i> Token Info
+        </div>
+        <div class="xp-window-controls">
+            <div class="xp-btn" onclick="toggleWindow('token-info-window')">_</div>
+            <div class="xp-btn">[]</div>
+            <div class="xp-btn xp-btn-close" onclick="toggleWindow('token-info-window')">X</div>
+        </div>
+    </div>
+    <div class="xp-content">
+        <div id="market-cap-display">
+            <strong><span id="token-name">--</span></strong><br>
+            Price: <span id="price-only-value">--</span><br>
+            MC: <span id="market-cap-only-value">--</span><br>
+            24h Vol: <span id="token-volume">--</span><br>
+            24h Chg: <span id="token-change">--</span><br>
+            Updated: <span id="update-time">--</span>
+            <div id="countdown" style="font-size: 11px; color: #666; margin-top: 5px;">Next update: 5s</div>
+            <div id="connection-label" style="display:none;"></div>
+        </div>
+    </div>
+</div>
+
+<!-- Welcome Pop-up -->
+<div id="info-panel" class="xp-window" style="top: 50%; left: 50%; transform: translate(-50%, -50%); width: 350px;">
+    <div class="xp-title-bar">
+        <div class="xp-title-bar-text">
+            <i class="fas fa-hand-wave"></i> Welcome!
+        </div>
+        <div class="xp-window-controls">
+            <div class="xp-btn xp-btn-close" onclick="toggleWindow('info-panel')">X</div>
+        </div>
+    </div>
+    <div class="xp-content" style="text-align: center;">
+        <h2 style="font-size: 18px; margin-bottom: 10px;">Meet STONK!</h2>
+        <p>Penis size automatically adjusts based on the token's <strong>Market Cap</strong>!</p>
+        <div style="background: #fdfdfd; padding: 10px; border: 1px inset #ccc; margin-top: 10px; text-align: left;">
+            <i class="fas fa-rocket"></i> Higher MC = Bigger<br>
+            <i class="fas fa-bolt"></i> Lower MC = Smaller
+        </div>
+    </div>
+</div>
+<!-- Twitter Embed Pop-up -->
+<div id="twitter-panel" class="xp-window hidden" style="top: 50%; left: 50%; transform: translate(-50%, -50%); width: 350px; z-index: 9999;">
+    <div class="xp-title-bar">
+        <div class="xp-title-bar-text">
+            <i class="fa-brands fa-x-twitter"></i> Latest Post
+        </div>
+        <div class="xp-window-controls">
+            <div class="xp-btn xp-btn-close" onclick="toggleWindow('twitter-panel')">X</div>
+        </div>
+    </div>
+    <div class="xp-content" style="text-align: center; max-height: 400px; overflow-y: auto;">
+        <a class="twitter-timeline" data-theme="light" data-tweet-limit="3" href="https://twitter.com/orangutansol">Posts by @orangutansol</a>
+    </div>
+</div>

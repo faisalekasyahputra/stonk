@@ -1,0 +1,752 @@
+<!DOCTYPE html>
+<html lang="en">
+
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>ORANGUTAN - Long Pill Dick of Alon</title>
+
+        <!-- Favicon -->
+        <link rel="icon" href="assets/favico/favicon.ico" sizes="any">
+        <link rel="icon" href="assets/favico/favicon-16x16.png" type="image/png" sizes="16x16">
+        <link rel="icon" href="assets/favico/favicon-32x32.png" type="image/png" sizes="32x32">
+
+        <!-- Open Graph Meta Tags -->
+        <meta property="og:title" content="ORANGUTAN - Long Pill Dick of Alon">
+        <meta property="og:description" content="Meet ORANGUTAN - long pill dick of alon whose penis size changes based on token market cap! Watch it grow and shrink in real-time.">
+        <meta property="og:image" content="assets/banner.png">
+        <meta property="og:type" content="website">
+
+        <!-- Custom Fonts -->
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Jost:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+
+        <!-- Byrd Font -->
+        <style>
+            @font-face {
+                font-family: 'Byrd';
+                src: url('assets/font/byrd-regular.ttf') format('truetype');
+                font-weight: normal;
+                font-style: normal;
+            }
+
+            @font-face {
+                font-family: 'Byrd';
+                src: url('assets/font/byrd-bold.ttf') format('truetype');
+                font-weight: bold;
+                font-style: normal;
+            }
+        </style>
+
+        <!-- Google Material Icons -->
+        <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+        <!-- FontAwesome Icons -->
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+
+        <style>
+            :root {
+                --background-dark: #15161b;
+                --surface-dark: #1E1E1E;
+                --accent-yellow: #A45A2A;
+                --text-light: #FFFFFF;
+                --text-dark: #121212;
+                --shadow-color: rgba(0, 0, 0, 0.5);
+                --highlight-color: rgba(164, 90, 42, 0.2);
+            }
+
+            body {
+                margin: 0;
+                background-color: var(--background-dark);
+                color: var(--text-light);
+                font-family: 'Byrd', 'Jost', sans-serif;
+            }
+
+            canvas {
+                display: block;
+            }
+
+            /* --- Base Panel Style (Neumorphic) --- */
+            .neo-panel {
+                background: var(--surface-dark);
+                border-radius: 20px;
+                border: 1px solid var(--accent-yellow);
+                box-shadow:
+                    5px 5px 10px var(--shadow-color),
+                    inset 2px 2px 5px var(--highlight-color),
+                    inset -2px -2px 5px var(--shadow-color);
+                padding: 2px;
+            }
+
+            .neo-title-bar {
+                padding: 6px 10px;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                color: var(--accent-yellow);
+                font-weight: bold;
+                font-size: 14px;
+                border-bottom: 1px solid var(--accent-yellow);
+            }
+
+            .flat-data-box i {
+                margin-right: 6px;
+                color: var(--accent-yellow);
+                font-size: 12px;
+            }
+
+            .neo-button i {
+                margin-right: 6px;
+                font-size: 12px;
+            }
+
+            #ca-box i {
+                margin-right: 6px;
+                color: var(--accent-yellow);
+                font-size: 12px;
+            }
+
+            .neo-content {
+                padding: 10px;
+                font-size: 13px;
+                line-height: 1.4;
+            }
+
+            .neo-button {
+                background: var(--surface-dark);
+                border: 1px solid var(--accent-yellow);
+                color: var(--accent-yellow);
+                border-radius: 10px;
+                box-shadow: 3px 3px 6px var(--shadow-color), -3px -3px 6px rgba(255, 255, 255, 0.05);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-weight: bold;
+                cursor: pointer;
+                transition: all 0.2s ease-in-out;
+            }
+
+            .neo-button:active {
+                box-shadow: inset 3px 3px 6px var(--shadow-color), inset -3px -3px 6px rgba(255, 255, 255, 0.05);
+                font-size: 0.9em;
+            }
+
+            .neo-title-buttons .neo-button {
+                width: 20px;
+                height: 20px;
+                margin-left: 5px;
+            }
+
+            /* Top Info Bar */
+            #top-info-bar {
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 10px 20px;
+                background: transparent;
+                z-index: 2000;
+                font-family: 'Byrd', 'Jost', sans-serif;
+            }
+
+            .flat-data-box {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                text-align: center;
+                min-width: 80px;
+                padding: 8px 12px;
+                background: transparent;
+                border: none;
+                border-radius: 8px;
+                transition: all 0.3s ease;
+            }
+
+            .flat-data-box:hover {
+                background: rgba(164, 90, 42, 0.1);
+                transform: translateY(-2px);
+            }
+
+            .flat-data-box span:first-child {
+                font-size: 12px;
+                color: var(--accent-yellow);
+                font-weight: bold;
+                text-transform: uppercase;
+                margin-bottom: 4px;
+            }
+
+            .flat-data-box span:last-child {
+                font-size: 16px;
+                color: var(--text-light);
+                font-weight: bold;
+            }
+
+            .custom-font {
+                font-family: 'Byrd', 'Jost', sans-serif;
+                font-weight: bold;
+            }
+
+            .flash-red {
+                color: #ff6b6b !important;
+                animation: flash-red 0.7s ease-out;
+            }
+
+            @keyframes flash-red {
+                0% {
+                    background-color: transparent;
+                }
+
+                50% {
+                    background-color: rgba(255, 107, 107, 0.2);
+                }
+
+                100% {
+                    background-color: transparent;
+                }
+            }
+
+            /* Responsive Design */
+            @media (max-width: 768px) {
+                #top-info-bar {
+                    padding: 8px 10px;
+                    flex-wrap: wrap;
+                    gap: 8px;
+                }
+
+                .flat-data-box {
+                    min-width: 70px;
+                    padding: 6px 8px;
+                    flex: 1;
+                }
+
+                .flat-data-box span:first-child {
+                    font-size: 10px;
+                }
+
+                .flat-data-box span:last-child {
+                    font-size: 14px;
+                }
+            }
+
+            @media (max-width: 480px) {
+                #top-info-bar {
+                    padding: 6px 8px;
+                }
+
+                .flat-data-box {
+                    min-width: 60px;
+                    padding: 4px 6px;
+                }
+
+                .flat-data-box span:first-child {
+                    font-size: 9px;
+                }
+
+                .flat-data-box span:last-child {
+                    font-size: 12px;
+                }
+            }
+
+            /* Adjust other panels to account for top bar */
+            .neo-panel {
+                top: 60px;
+            }
+
+            #rotation-toggle {
+                bottom: 10px;
+                right: 10px;
+            }
+
+            #social-links {
+                bottom: 10px;
+                left: 10px;
+            }
+
+            /* --- Pop-up Panel --- */
+            #info-panel {
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                width: 350px;
+                z-index: 1000;
+            }
+
+            #info-panel .neo-content {
+                text-align: center;
+            }
+
+            #info-panel h2 {
+                margin-top: 0;
+                font-size: 24px;
+                color: var(--accent-yellow);
+            }
+
+            #info-panel .highlight {
+                color: var(--accent-yellow);
+            }
+
+            /* --- Layout Positions --- */
+            #size-info-window,
+            #token-info-window {
+                position: absolute;
+                top: 10px;
+                width: 280px;
+                z-index: 1000;
+            }
+
+            #size-info-window {
+                left: 10px;
+            }
+
+            #token-info-window {
+                right: 10px;
+            }
+
+            /* Top-Center Bar */
+            #top-info-bar {
+                position: absolute;
+                top: 10px;
+                left: 50%;
+                transform: translateX(-50%);
+                display: flex;
+                justify-content: center;
+                z-index: 1001;
+                gap: 15px;
+            }
+
+            .flat-data-box {
+                background: var(--surface-dark);
+                border: 1px solid var(--accent-yellow);
+                border-radius: 15px;
+                padding: 8px 20px;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                font-weight: bold;
+                color: var(--text-light);
+                font-size: 18px;
+                box-shadow:
+                    3px 3px 8px var(--shadow-color),
+                    inset 1px 1px 3px var(--highlight-color);
+            }
+
+            .flat-data-box .custom-font {
+                font-family: 'Crashnumberinggothic', sans-serif;
+                font-size: 20px;
+            }
+
+            /* Bottom CA Box */
+            #ca-box {
+                position: absolute;
+                bottom: 10px;
+                left: 50%;
+                transform: translateX(-50%);
+                z-index: 1000;
+                background: var(--surface-dark);
+                border: 1px solid var(--accent-yellow);
+                border-radius: 15px;
+                padding: 10px 15px;
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                font-weight: bold;
+                color: var(--text-light);
+                font-size: 16px;
+                box-shadow: 3px 3px 8px var(--shadow-color);
+            }
+
+            #copy-ca-button {
+                width: 30px;
+                height: 30px;
+            }
+
+            /* Rotation Toggle */
+            #rotation-toggle {
+                position: absolute;
+                bottom: 10px;
+                right: 10px;
+                padding: 10px 20px;
+                z-index: 1000;
+            }
+
+            /* --- Utility & Animations --- */
+            .status-dot {
+                width: 10px;
+                height: 10px;
+                border-radius: 50%;
+                display: inline-block;
+                margin-right: 8px;
+                border: 1px solid rgba(0, 0, 0, 0.5);
+            }
+
+            .status-online {
+                background-color: #A45A2A;
+            }
+
+            .status-offline {
+                background-color: #ff0000;
+            }
+
+            @keyframes flash-yellow {
+                0% {
+                    background-color: var(--highlight-color);
+                }
+
+                100% {
+                    background-color: transparent;
+                }
+            }
+
+            .flash-green {
+                animation: flash-yellow 0.7s ease-out;
+            }
+
+            .flash-red {
+                animation: flash-yellow 0.7s ease-out;
+            }
+
+            .neo-content h2 img {
+                vertical-align: middle;
+                margin-right: 8px;
+                width: 28px;
+                height: 28px;
+            }
+
+            .neo-content .material-icons {
+                vertical-align: middle;
+                margin-right: 4px;
+            }
+
+            @font-face {
+                font-family: 'Crashnumberinggothic';
+                src: url('assets/font/Crashnumberinggothic.ttf') format('truetype');
+            }
+
+            /* Social Links Container */
+            #social-links {
+                position: absolute;
+                bottom: 10px;
+                left: 10px;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                z-index: 1000;
+            }
+
+            /* Base Social Button Styles */
+            .social-button {
+                width: 50px;
+                height: 50px;
+                padding: 8px;
+                border-radius: 12px;
+                text-decoration: none;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                box-sizing: border-box;
+                transition: all 0.3s ease;
+                cursor: pointer;
+            }
+
+            /* Hover Effects */
+            .social-button:hover {
+                transform: translateY(-2px);
+                box-shadow:
+                    0 8px 16px rgba(0, 0, 0, 0.3),
+                    inset 0 0 20px rgba(164, 90, 42, 0.1);
+                border-color: #A45A2A;
+            }
+
+            .social-button:hover svg {
+                fill: var(--accent-yellow);
+                /* Change SVG fill to accent green on hover */
+            }
+
+            .social-button:hover span {
+                color: var(--accent-yellow);
+                /* Change text color to accent green on hover */
+            }
+
+            .social-button:active {
+                transform: translateY(0);
+                box-shadow:
+                    inset 3px 3px 6px rgba(0, 0, 0, 0.3),
+                    inset -3px -3px 6px rgba(255, 255, 255, 0.05);
+            }
+
+            /* Twitter Buttons */
+            .social-button:not(#buy-link) {
+                width: 50px;
+            }
+
+            /* Buy Button Specific */
+            #buy-link {
+                width: 90px;
+                height: 50px;
+                flex-direction: row;
+                gap: 8px;
+                padding: 8px 12px;
+                align-items: center;
+                justify-content: center;
+            }
+
+            /* Special Hover Effect for Buy Button */
+            #buy-link:hover {
+                background: linear-gradient(135deg, rgba(164, 90, 42, 0.1), rgba(164, 90, 42, 0.2));
+                border-color: #A45A2A;
+            }
+
+            /* Icons */
+            .social-button svg {
+                width: 20px;
+                height: 20px;
+                flex-shrink: 0;
+                fill: var(--text-light);
+                /* Set default color to white */
+                transition: fill 0.3s ease;
+            }
+
+            .social-button img {
+                width: 20px;
+                height: 20px;
+                flex-shrink: 0;
+            }
+
+            /* Buy Button Icon - Keep Original Colors */
+            #buy-link img {
+                filter: none;
+            }
+
+            /* Text */
+            .social-button span {
+                text-transform: uppercase;
+                text-decoration: none;
+                font-size: 16px;
+                line-height: 20px;
+                font-weight: bold;
+                margin-left: 8px;
+                color: var(--text-light);
+                /* Set default color to white */
+                transition: color 0.3s ease;
+            }
+
+            /* --- Responsive Design --- */
+            @media (max-width: 870px) {
+                #top-info-bar {
+                    flex-direction: column;
+                    align-items: center;
+                    gap: 10px;
+                    transform: translateX(0);
+                    left: 0;
+                    right: 0;
+                }
+
+                #size-info-window,
+                #token-info-window {
+                    display: none;
+                }
+            }
+        </style>
+
+        <!-- Importmap to handle module loading from CDNs -->
+        <script type="importmap">
+    {
+        "imports": {
+            "three": "https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.module.js",
+            "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.128.0/examples/jsm/",
+            "lil-gui": "https://cdn.jsdelivr.net/npm/lil-gui@0.19/dist/lil-gui.esm.js"
+        }
+    }
+    </script>
+    </head>
+
+    <body>
+
+        <!-- Desktop Icons -->
+        <div class="desktop-icons">
+            <div class="desktop-icon" onclick="window.open('https://twitter.com/orangutansol', '_blank')">
+                <i class="fa-brands fa-x-twitter" style="color: #fff;"></i>
+                <span>X</span>
+            </div>
+            <div class="desktop-icon" onclick="window.open('https://t.me/orangutan_portal', '_blank')">
+                <i class="fab fa-telegram" style="color: #0088cc;"></i>
+                <span>Telegram</span>
+            </div>
+            <div class="desktop-icon" onclick="window.open('https://pump.fun', '_blank')">
+                <img src="assets/pump.webp" style="width: 32px; height: 32px;">
+                <span>Buy $GIMI</span>
+            </div>
+            <div class="desktop-icon" onclick="toggleWindow('info-panel')">
+                <i class="fas fa-file-alt" style="color: #fff;"></i>
+                <span>Manifesto.txt</span>
+            </div>
+        </div>
+
+        <!-- Windows XP Taskbar -->
+        <div class="xp-taskbar">
+            <div class="xp-start-btn" id="start-btn">
+                <img src="assets/favico/favicon-16x16.png" alt="start">
+                start
+            </div>
+            <div class="xp-task-items">
+                <div class="xp-task-item" onclick="toggleWindow('size-info-window')">
+                    <i class="fas fa-ruler-vertical"></i> <span id="taskbar-size">Size: -- cm</span>
+                </div>
+                <div class="xp-task-item" onclick="toggleWindow('token-info-window')">
+                    <i class="fas fa-coins"></i> <span id="taskbar-mc">MC: $--</span>
+                </div>
+            </div>
+            <div class="xp-system-tray">
+                <div class="xp-tray-icon" id="connection-status">
+                    <span class="status-dot"></span>
+                </div>
+                <div id="ca-display" style="font-size: 10px; opacity: 0.8; cursor: pointer;">CA: <span id="ca-box-address" style="display:none;"></span> ...</div>
+                <div class="xp-tray-clock" id="taskbar-clock">12:00 PM</div>
+            </div>
+        </div>
+
+        <!-- Start Menu -->
+        <div id="start-menu">
+            <div class="start-menu-header">
+                <img src="assets/favico/favicon-32x32.png" alt="user">
+                Orangutan User
+            </div>
+            <div class="start-menu-links">
+                <a href="https://twitter.com/orangutansol" target="_blank" class="start-link">
+                    <i class="fa-brands fa-x-twitter" style="color: #000;"></i> X
+                </a>
+                <a href="https://t.me/orangutan_portal" target="_blank" class="start-link">
+                    <i class="fab fa-telegram" style="color: #0088cc;"></i> Telegram
+                </a>
+                <a href="https://pump.fun" target="_blank" class="start-link">
+                    <img src="assets/pump.webp" style="width: 16px; height: 16px;"> Buy on Pump.fun
+                </a>
+                <div style="border-top: 1px solid #ddd; margin: 5px 0;"></div>
+                <a href="#" class="start-link" id="start-about">
+                    <i class="fas fa-info-circle"></i> About Orangutan
+                </a>
+                <a href="#" class="start-link" onclick="location.reload()">
+                    <i class="fas fa-power-off"></i> Turn Off PC
+                </a>
+            </div>
+        </div>
+
+        <!-- Size Information Window -->
+        <div id="size-info-window" class="xp-window" style="top: 20px; left: 20px; width: 280px;">
+            <div class="xp-title-bar">
+                <div class="xp-title-bar-text">
+                    <i class="fas fa-ruler-vertical"></i> Size Monitor
+                </div>
+                <div class="xp-window-controls">
+                    <div class="xp-btn" onclick="toggleWindow('size-info-window')">_</div>
+                    <div class="xp-btn">[]</div>
+                    <div class="xp-btn xp-btn-close" onclick="toggleWindow('size-info-window')">X</div>
+                </div>
+            </div>
+            <div class="xp-content" id="size-info">
+                Size: <span id="penis-size">-- cm</span><br>
+                MC: <span id="penis-mc">--</span>
+                (<span id="penis-change">--%</span>)
+                <div style="display:none;" id="size-only-value"></div>
+            </div>
+        </div>
+
+        <!-- Token Information Window -->
+        <div id="token-info-window" class="xp-window" style="top: 20px; right: 20px; width: 280px;">
+            <div class="xp-title-bar">
+                <div class="xp-title-bar-text">
+                    <i class="fas fa-coins"></i> Token Info
+                </div>
+                <div class="xp-window-controls">
+                    <div class="xp-btn" onclick="toggleWindow('token-info-window')">_</div>
+                    <div class="xp-btn">[]</div>
+                    <div class="xp-btn xp-btn-close" onclick="toggleWindow('token-info-window')">X</div>
+                </div>
+            </div>
+            <div class="xp-content">
+                <div id="market-cap-display">
+                    <strong><span id="token-name">--</span></strong><br>
+                    Price: <span id="price-only-value">--</span><br>
+                    MC: <span id="market-cap-only-value">--</span><br>
+                    24h Vol: <span id="token-volume">--</span><br>
+                    24h Chg: <span id="token-change">--</span><br>
+                    Updated: <span id="update-time">--</span>
+                    <div id="countdown" style="font-size: 11px; color: #666; margin-top: 5px;">Next update: 5s</div>
+                    <div id="connection-label" style="display:none;"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Welcome Pop-up -->
+        <div id="info-panel" class="xp-window" style="top: 50%; left: 50%; transform: translate(-50%, -50%); width: 350px;">
+            <div class="xp-title-bar">
+                <div class="xp-title-bar-text">
+                    <i class="fas fa-hand-wave"></i> Welcome!
+                </div>
+                <div class="xp-window-controls">
+                    <div class="xp-btn xp-btn-close" onclick="toggleWindow('info-panel')">X</div>
+                </div>
+            </div>
+            <div class="xp-content" style="text-align: center;">
+                <h2 style="font-size: 18px; margin-bottom: 10px;">Meet ORANGUTAN!</h2>
+                <p>Penis size automatically adjusts based on the token's <strong>Market Cap</strong>!</p>
+                <div style="background: #fdfdfd; padding: 10px; border: 1px inset #ccc; margin-top: 10px; text-align: left;">
+                    <i class="fas fa-rocket"></i> Higher MC = Bigger<br>
+                    <i class="fas fa-bolt"></i> Lower MC = Smaller
+                </div>
+            </div>
+        </div>
+
+        <script>
+            // Simple Taskbar Logic
+            function updateClock() {
+                const now = new Date();
+                let hours = now.getHours();
+                let minutes = now.getMinutes();
+                let ampm = hours >= 12 ? 'PM' : 'AM';
+                hours = hours % 12;
+                hours = hours ? hours : 12;
+                minutes = minutes < 10 ? '0' + minutes : minutes;
+                document.getElementById('taskbar-clock').textContent = hours + ':' + minutes + ' ' + ampm;
+            }
+            setInterval(updateClock, 1000);
+            updateClock();
+
+            // Toggle Start Menu
+            const startBtn = document.getElementById('start-btn');
+            const startMenu = document.getElementById('start-menu');
+            startBtn.onclick = (e) => {
+                e.stopPropagation();
+                startMenu.style.display = startMenu.style.display === 'flex' ? 'none' : 'flex';
+            };
+            document.onclick = () => startMenu.style.display = 'none';
+
+            // Toggle Windows
+            function toggleWindow(id) {
+                const win = document.getElementById(id);
+                win.classList.toggle('hidden');
+            }
+
+            // Re-map the close button for info panel
+            document.getElementById('start-about').onclick = () => {
+                toggleWindow('info-panel');
+            };
+
+            // Copy CA from tray
+            document.getElementById('ca-display').onclick = () => {
+                const ca = document.getElementById('ca-box-address') ? document.getElementById('ca-box-address').textContent : "2ADR43Dcecc7HQPBKPcKKHBN5BjfWvPpFo483bjzpump";
+                navigator.clipboard.writeText(ca);
+                alert('CA Copied: ' + ca);
+            };
+        </script>
+
+        <!-- Main entry point for the application -->
+        <script type="module" src="js/main.js?v=20241220-21"></script>
+    </body>
+
+</html>
