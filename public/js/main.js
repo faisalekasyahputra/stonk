@@ -10,7 +10,7 @@ import {
 } from "./dynamicPart.js?v=20260830-skin2";
 import { createGUI, addModelControls } from "./ui.js?v=20260830-skin2";
 import { MatrixRain } from "./matrixRain.js?v=20260830-skin2";
-import { createWorld, plantProp, updateWorld } from "./world.js?v=20260830-skin2";
+import { createWorld, plantProp, updateWorld, heightAt } from "./world.js?v=20260830-skin2";
 import { startDataUpdates, TOKEN_ADDRESS } from "./data.js?v=20260830-skin2";
 
 // --- Windows XP UI Logic ---
@@ -188,11 +188,20 @@ const clips = [];
 let currentAction = null;
 let loopCount = 0;
 
+// --- Locomotion: Walking/Running actually travel across the island ---
+const WORLD_Y = -3.12; // where the terrain group sits
+const ROAM_LIMIT = 34; // grass turns to sand/lagoon past ~40, turn back before it
+const SPEEDS = { Walking: 1.3, Running: 3.6 }; // units/s, eyeballed to the strides
+let heading = Math.PI; // current facing (starts toward the camera)
+let targetHeading = Math.PI;
+
 // Console self-check: window.__stonkDebug() -> {clips, current, loops}
 window.__stonkDebug = () => ({
 	clips: clips.map((c) => c.name),
 	current: currentAction && currentAction.getClip().name,
 	loops: loopCount,
+	pos: loadedModel && loadedModel.position.toArray().map((n) => +n.toFixed(2)),
+	heading: +heading.toFixed(2),
 });
 
 function playRandomClip() {
@@ -207,6 +216,8 @@ function playRandomClip() {
 	next.play();
 	currentAction = next;
 	loopCount = 0;
+	// A fresh travel clip strikes out in a new direction.
+	if (SPEEDS[clip.name]) targetHeading = Math.random() * Math.PI * 2;
 }
 
 loader.load(
@@ -442,6 +453,37 @@ function animate() {
 	const delta = clock.getDelta();
 	if (mixer) mixer.update(delta);
 	updateWorld(delta);
+
+	// Locomotion: the model's forward is -Z at heading 0 (Meshy export), so the
+	// travel direction is (-sin h, -cos h). Non-travel clips leave him in place.
+	if (loadedModel && currentAction) {
+		let dh = targetHeading - heading;
+		dh = Math.atan2(Math.sin(dh), Math.cos(dh)); // shortest way around
+		heading += Math.max(-3 * delta, Math.min(3 * delta, dh));
+		loadedModel.rotation.y = heading;
+
+		const speed = SPEEDS[currentAction.getClip().name] || 0;
+		if (speed) {
+			const nx = loadedModel.position.x - Math.sin(heading) * speed * delta;
+			const nz = loadedModel.position.z - Math.cos(heading) * speed * delta;
+			if (Math.hypot(nx, nz) > ROAM_LIMIT) {
+				// Nearing the lagoon: turn back toward the middle, with some wobble
+				// so he never ping-pongs along the same line.
+				targetHeading = Math.atan2(nx, nz) + (Math.random() - 0.5);
+			} else {
+				loadedModel.position.set(nx, WORLD_Y + heightAt(nx, nz), nz);
+			}
+		}
+		// The camera keeps him framed wherever he wanders (1.5 above his old spot).
+		controls.target.lerp(
+			new THREE.Vector3(
+				loadedModel.position.x,
+				loadedModel.position.y + 4.62,
+				loadedModel.position.z,
+			),
+			0.05,
+		);
+	}
 	// The camera orbits Jemo now; he and the scenery stay put. OrbitControls
 	// applies this inside its own update() below, so the existing toggle and the
 	// GUI checkbox keep working untouched.
