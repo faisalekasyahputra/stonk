@@ -393,8 +393,61 @@ function chartLayer() {
 let skyMesh = null;
 let skyGrid = null;
 let skyChart = null;
+let skyHaze = null;
+let sunGlow = null;
 let gridT = 0;
 let chartT = 0;
+
+/* Dreamy layer: big soft pastel blobs on a transparent canvas, drawn additive
+ * over the board and drifted slowly, so the whole sky breathes like a haze. */
+function hazeTexture() {
+	const c = document.createElement("canvas");
+	c.width = 1024;
+	c.height = 512;
+	const g = c.getContext("2d");
+	const blobs = [
+		["255,120,220", 0.30], // pink
+		["120,180,255", 0.26], // baby blue
+		["190,120,255", 0.26], // lavender
+		["120,255,230", 0.22], // mint
+		["255,200,140", 0.20], // peach
+	];
+	for (let i = 0; i < 14; i++) {
+		const [rgb, a] = blobs[i % blobs.length];
+		const x = srnd(0, c.width);
+		const y = srnd(0.1, 0.85) * c.height;
+		const r = srnd(120, 300);
+		const grad = g.createRadialGradient(x, y, 0, x, y, r);
+		grad.addColorStop(0, `rgba(${rgb},${a})`);
+		grad.addColorStop(1, `rgba(${rgb},0)`);
+		g.fillStyle = grad;
+		g.beginPath();
+		g.arc(x, y, r, 0, Math.PI * 2);
+		g.fill();
+		// blobs near the seam are drawn again on the far side so the wrap is clean
+		if (x < r) { g.beginPath(); g.arc(x + c.width, y, r, 0, Math.PI * 2); g.fill(); }
+		if (x > c.width - r) { g.beginPath(); g.arc(x - c.width, y, r, 0, Math.PI * 2); g.fill(); }
+	}
+	const tex = new THREE.CanvasTexture(c);
+	tex.wrapS = THREE.RepeatWrapping;
+	tex.wrapT = THREE.ClampToEdgeWrapping;
+	return tex;
+}
+
+/* The light: a warm additive glare sprite hung high in the dome. */
+function sunTexture() {
+	const c = document.createElement("canvas");
+	c.width = c.height = 256;
+	const g = c.getContext("2d");
+	const grad = g.createRadialGradient(128, 128, 0, 128, 128, 128);
+	grad.addColorStop(0, "rgba(255,255,240,1)");
+	grad.addColorStop(0.2, "rgba(255,240,190,0.8)");
+	grad.addColorStop(0.5, "rgba(255,200,120,0.28)");
+	grad.addColorStop(1, "rgba(255,180,80,0)");
+	g.fillStyle = grad;
+	g.fillRect(0, 0, 256, 256);
+	return new THREE.CanvasTexture(c);
+}
 
 function buildSky() {
 	// Only the upper half: below the horizon the terrain and water take over.
@@ -434,6 +487,28 @@ function buildSky() {
 	chart.renderOrder = -1;
 	group.add(chart);
 
+	skyHaze = new THREE.Mesh(
+		shell(410),
+		new THREE.MeshBasicMaterial({
+			map: hazeTexture(), transparent: true, opacity: 0.55,
+			blending: THREE.AdditiveBlending,
+			side: THREE.BackSide, depthWrite: false, fog: false,
+		}),
+	);
+	skyHaze.renderOrder = -1;
+	group.add(skyHaze);
+
+	sunGlow = new THREE.Sprite(
+		new THREE.SpriteMaterial({
+			map: sunTexture(), transparent: true,
+			blending: THREE.AdditiveBlending, depthWrite: false, fog: false,
+		}),
+	);
+	sunGlow.position.set(150, 250, -230);
+	sunGlow.scale.setScalar(220);
+	sunGlow.layers.mask = 1; // layer 0, with the scenery
+	group.add(sunGlow);
+
 	return group;
 }
 
@@ -459,6 +534,14 @@ export function updateWorld(delta) {
 			chartT = 0;
 			skyChart.step();
 		}
+	}
+	// The haze drifts against the board and breathes; the sun pulses gently.
+	if (skyHaze) {
+		skyHaze.material.map.offset.x = (skyHaze.material.map.offset.x - delta * 0.006 + 1) % 1;
+		skyHaze.material.opacity = 0.45 + 0.18 * Math.sin(clock * 0.35);
+	}
+	if (sunGlow) {
+		sunGlow.scale.setScalar(220 + 18 * Math.sin(clock * 0.8));
 	}
 
 	if (waterMesh && waterRest) {
