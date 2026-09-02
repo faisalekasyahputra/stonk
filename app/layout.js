@@ -1,6 +1,12 @@
 import "./globals.css";
 
 export const metadata = {
+	metadataBase: new URL(
+		process.env.NEXT_PUBLIC_SITE_URL ||
+			(process.env.VERCEL_URL
+				? `https://${process.env.VERCEL_URL}`
+				: "http://localhost:3000"),
+	),
 	title: "Stonk",
 	description:
 		"Meet STONK whose penis size changes based on token market cap! Watch it grow and shrink in real-time.",
@@ -8,8 +14,22 @@ export const metadata = {
 		title: "Stonk",
 		description:
 			"Meet STONK whose penis size changes based on token market cap! Watch it grow and shrink in real-time.",
-		images: ["/assets/ogjemo.jpg"],
+		images: [
+			{
+				url: "/assets/og-stonk-market.png",
+				width: 1200,
+				height: 630,
+				alt: "STONK market banner",
+			},
+		],
 		type: "website",
+	},
+	twitter: {
+		card: "summary_large_image",
+		title: "Stonk",
+		description:
+			"Meet STONK whose penis size changes based on token market cap! Watch it grow and shrink in real-time.",
+		images: ["/assets/og-stonk-market.png"],
 	},
 };
 
