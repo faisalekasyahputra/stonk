@@ -760,3 +760,43 @@ canvas {
 .hidden {
     display: none !important;
 }
+/* --- CRT overlay: scanlines + vignette + flicker, pure CSS --- */
+#crt-overlay {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 99999;
+    background:
+        repeating-linear-gradient(
+            to bottom,
+            rgba(0, 0, 0, 0) 0px,
+            rgba(0, 0, 0, 0) 2px,
+            rgba(0, 0, 0, 0.18) 3px,
+            rgba(0, 0, 0, 0) 4px
+        ),
+        radial-gradient(
+            ellipse at center,
+            rgba(0, 0, 0, 0) 58%,
+            rgba(0, 0, 0, 0.35) 100%
+        );
+    mix-blend-mode: multiply;
+    animation: crt-flicker 0.15s infinite;
+}
+#crt-overlay::after {
+    /* faint RGB subpixel stripes for the shadow-mask look */
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(
+        to right,
+        rgba(255, 0, 0, 0.045) 0px,
+        rgba(0, 255, 0, 0.045) 1px,
+        rgba(0, 0, 255, 0.045) 2px,
+        rgba(0, 0, 0, 0) 3px
+    );
+}
+@keyframes crt-flicker {
+    0%   { opacity: 1; }
+    50%  { opacity: 0.93; }
+    100% { opacity: 1; }
+}

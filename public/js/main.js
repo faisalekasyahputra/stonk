@@ -134,6 +134,13 @@ const {
 // The world sits at the character's foot height, so Jemo stands on it.
 const world = createWorld(scene, -3.12);
 
+// CRT overlay (styled in globals.css) sits above everything, clicks pass through.
+if (!document.getElementById("crt-overlay")) {
+	const crt = document.createElement("div");
+	crt.id = "crt-overlay";
+	document.body.appendChild(crt);
+}
+
 // Set initial camera position after setup
 camera.position.set(0, 2, 7);
 controls.target.set(0, 1.5, 0);

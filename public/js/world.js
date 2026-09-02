@@ -16,7 +16,7 @@ const WATER = new THREE.Color(0x2f7fd4);
 const TRUNK = new THREE.Color(0x8a5a2b);
 const LEAF = new THREE.Color(0x2f9b28);
 
-const SKY = 0x0e2244; // navy, matches the market-board sky
+const SKY = 0x0b2fc9; // trading-floor blue, matches the board sky
 const ISLAND = 46; // grass reaches this far, then falls to the shore
 const SHORE = 62; // past here the ground is under water
 
@@ -128,124 +128,313 @@ function groundTexture() {
  *
  * Clouds that cross the seam are drawn twice so the tile wraps without a join.
  */
-// The sky is a giant US stock-market board: navy gradient, price grid, a
-// candlestick tape and a rising orange trend line -- the stonks sky. The chart
-// data is a random walk that is detrended to close the loop, so the texture
-// still tiles seamlessly around the dome and keeps the slow drift animation.
-function skyTexture() {
-	if (typeof document === "undefined") return null;
-	const w = 1024;
-	const h = 512;
-	const canvas = document.createElement("canvas");
-	canvas.width = w;
-	canvas.height = h;
-	const ctx = canvas.getContext("2d");
+// The sky is a live trading-floor board (ported from the Ticker Sky
+// reference): a flickering number grid, a candlestick tape with glowing
+// index lines whose volatility clusters GARCH-style, and a stonks arrow
+// that draws itself, holds, fades and respawns. Three back-side shells:
+// flat blue base, grid board, additive chart layer. MirroredRepeatWrapping
+// keeps both canvases seamless around the dome.
+const SKY_CFG = {
+	cols: 24, rows: 32, cellW: 112, cellH: 48, // grid texture
+	lines: [
+		{ color: "#ff9a1a", width: 5, y: 0.46, vol: 0.010 }, // stonks orange
+		{ color: "#dff3ff", width: 3, y: 0.58, vol: 0.008 },
+		{ color: "#4de0ff", width: 3, y: 0.68, vol: 0.006 },
+	],
+	candles: 48, candleY: 0.25, // candlestick row (canvas y 0..1)
+	arrow: { width: 22, speed: 0.008, hold: 2.5 },
+	tick: 0.09, // grid cell refresh interval, seconds
+	step: 0.05, // chart redraw interval, seconds
+	points: 160, // chart resolution
+};
+const srnd = (a, b) => a + Math.random() * (b - a);
 
-	const sky = ctx.createLinearGradient(0, 0, 0, h);
-	sky.addColorStop(0, "#081226"); // zenith, deep navy
-	sky.addColorStop(0.7, "#0e2244");
-	sky.addColorStop(1, "#1b3a6b"); // horizon glow
-	ctx.fillStyle = sky;
-	ctx.fillRect(0, 0, w, h);
+/* Layer 1: flickering number grid */
+function gridLayer() {
+	const c = document.createElement("canvas");
+	c.width = SKY_CFG.cols * SKY_CFG.cellW;
+	c.height = SKY_CFG.rows * SKY_CFG.cellH;
+	const g = c.getContext("2d");
+	const { cellW, cellH } = SKY_CFG;
+	const cells = [];
+	for (let r = 0; r < SKY_CFG.rows; r++)
+		for (let col = 0; col < SKY_CFG.cols; col++) {
+			const kind = Math.random();
+			cells.push({
+				x: col * cellW, y: r * cellH,
+				boxed: kind < 0.3, pct: kind > 0.9 && col < 4,
+				tri: kind > 0.3 && kind < 0.42,
+				val: srnd(0.2, 9.9), dir: Math.random() < 0.5 ? 1 : -1,
+			});
+		}
+	const draw = (k) => {
+		const { x, y } = k;
+		g.clearRect(x, y, cellW, cellH);
+		g.strokeStyle = "rgba(140,190,255,0.35)";
+		g.lineWidth = 2;
+		g.strokeRect(x, y, cellW, cellH); // board grid
+		if (k.boxed) {
+			g.fillStyle = `rgba(40,95,235,${srnd(0.5, 0.9)})`;
+			g.fillRect(x + 1, y + 1, cellW - 2, cellH - 2);
+		}
+		if (k.tri) { // up/down marker
+			const cx = x + cellW / 2, cy = y + cellH / 2, h = 12;
+			g.fillStyle = "rgba(190,225,255,0.9)";
+			g.beginPath();
+			g.moveTo(cx - h, cy + h * k.dir * 0.6);
+			g.lineTo(cx + h, cy + h * k.dir * 0.6);
+			g.lineTo(cx, cy - h * k.dir * 0.6);
+			g.fill();
+			return;
+		}
+		g.textBaseline = "middle";
+		if (k.pct) {
+			g.font = 'bold 30px "Arial Narrow",Arial,sans-serif';
+			g.fillStyle = "#d6ecff";
+			g.fillText(`${k.dir > 0 ? "" : "-"}${k.val.toFixed(2)}%`, x + 6, y + cellH / 2);
+		} else {
+			g.font = 'bold 26px "Arial Narrow",Arial,sans-serif';
+			g.fillStyle = k.boxed ? "#ffffff" : `rgba(200,228,255,${srnd(0.55, 0.95)})`;
+			g.fillText(k.val.toFixed(2), x + 10, y + cellH / 2);
+		}
+	};
+	cells.forEach(draw);
+	const tex = new THREE.CanvasTexture(c);
+	tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+	tex.repeat.set(-2, 2); // negative x: un-mirrors text on the BackSide dome
+	const tick = () => { // flicker ~40 random cells
+		for (let i = 0; i < 40; i++) {
+			const k = cells[(Math.random() * cells.length) | 0];
+			k.val = Math.max(0.05, k.val + srnd(-0.25, 0.25));
+			k.dir = Math.random() < 0.5 ? 1 : -1;
+			draw(k);
+		}
+		tex.needsUpdate = true;
+	};
+	return { tex, tick };
+}
 
-	let seed = 1337;
-	const rand = () => {
-		seed = (seed * 16807) % 2147483647;
-		return seed / 2147483647;
+/* Layer 2: candles + glowing lines with clustered volatility + stonks arrow */
+function chartLayer() {
+	const c = document.createElement("canvas");
+	c.width = 1600;
+	c.height = 700;
+	const g = c.getContext("2d");
+	const clamp = (x, a, b) => Math.min(b, Math.max(a, x));
+
+	// volatility regime: spikes randomly, decays, shocks amplify themselves
+	const vol = { v: 1, target: 1 };
+	const volStep = () => {
+		if (Math.random() < 0.015) vol.target = srnd(2.5, 6); // shock event
+		vol.target += (1 - vol.target) * 0.01; // mean reversion
+		vol.v += (vol.target - vol.v) * 0.08;
+		return vol.v;
+	};
+	const shock = () => (Math.random() < 0.02 ? srnd(-1, 1) * 3 : 0); // fat tail
+
+	const lines = SKY_CFG.lines.map((l) => ({
+		...l,
+		data: Array.from({ length: SKY_CFG.points }, () => l.y),
+	}));
+	const candles = []; // {o,h,l,c} in 0..1 canvas-y space (smaller = higher)
+	const N = SKY_CFG.candles, cy = SKY_CFG.candleY;
+	let price = cy;
+	const nextCandle = (v) => {
+		const o = price, path = [o];
+		for (let i = 0; i < 4; i++) path.push(path.at(-1) + (srnd(-1, 1) + shock()) * 0.006 * v);
+		price = clamp(path.at(-1) + (cy - path.at(-1)) * 0.03, cy - 0.16, cy + 0.16);
+		return { o, c: price, h: Math.min(...path, price), l: Math.max(...path, price) };
+	};
+	for (let i = 0; i < N; i++) candles.push(nextCandle(1));
+
+	const tex = new THREE.CanvasTexture(c);
+	tex.wrapS = THREE.MirroredRepeatWrapping; // continuous across the dome seam
+	tex.wrapT = THREE.ClampToEdgeWrapping;
+	tex.repeat.set(-2, 1); // negative x: un-mirrors the chart on the BackSide dome
+
+	// stonks arrow: draws itself, holds, fades, respawns elsewhere
+	const arrow = { pts: [], t: 0, phase: "draw" };
+	const newArrow = () => {
+		const x0 = srnd(0.15, 0.45) * c.width, y0 = srnd(0.55, 0.75) * c.height;
+		const pts = [[x0, y0]];
+		let x = x0, y = y0;
+		for (let i = 0; i < 4; i++) { // the dip
+			x += srnd(0.06, 0.11) * c.width;
+			y += srnd(-0.06, 0.1) * c.height;
+			pts.push([x, y]);
+		}
+		x += srnd(0.14, 0.2) * c.width; // the rip
+		y -= srnd(0.32, 0.42) * c.height;
+		pts.push([x, y]);
+		arrow.pts = pts;
+		arrow.t = 0;
+		arrow.phase = "draw";
+	};
+	newArrow();
+	let frame = 0;
+	const drawArrow = () => {
+		const a = arrow, A = SKY_CFG.arrow;
+		a.t += A.speed;
+		let alpha = 1, prog = 1;
+		if (a.phase === "draw") {
+			prog = Math.min(1, a.t);
+			if (a.t >= 1) { a.phase = "hold"; a.t = 0; }
+		} else if (a.phase === "hold") {
+			if (a.t >= A.hold) { a.phase = "fade"; a.t = 0; }
+		} else {
+			alpha = 1 - a.t;
+			if (a.t >= 1) return newArrow();
+		}
+
+		// interpolate along the polyline by length
+		const seg = a.pts.slice(1).map((q, i) => Math.hypot(q[0] - a.pts[i][0], q[1] - a.pts[i][1]));
+		const total = seg.reduce((s, l) => s + l, 0);
+		let rem = prog * total;
+		const path = [a.pts[0]];
+		let dir = [1, 0];
+		for (let i = 0; i < seg.length; i++) {
+			const p = a.pts[i], q = a.pts[i + 1];
+			dir = [(q[0] - p[0]) / seg[i], (q[1] - p[1]) / seg[i]];
+			if (rem >= seg[i]) { path.push(q); rem -= seg[i]; }
+			else { path.push([p[0] + dir[0] * rem, p[1] + dir[1] * rem]); break; }
+		}
+		const tip = path.at(-1), pulse = 1 + 0.15 * Math.sin(frame * 0.2);
+		const grad = g.createLinearGradient(a.pts[0][0], a.pts[0][1], tip[0], tip[1]);
+		grad.addColorStop(0, "#ff6a00");
+		grad.addColorStop(1, "#ffd23a");
+		g.save();
+		g.globalAlpha = alpha;
+		g.lineCap = "round";
+		g.beginPath();
+		path.forEach(([x, y], i) => g[i ? "lineTo" : "moveTo"](x, y));
+		g.strokeStyle = grad;
+		g.lineWidth = A.width;
+		g.shadowColor = "#ff9a1a";
+		g.shadowBlur = 36 * pulse;
+		g.stroke();
+		g.stroke();
+		g.shadowBlur = 0;
+		g.strokeStyle = "rgba(255,255,255,0.85)";
+		g.lineWidth = A.width * 0.3;
+		g.stroke();
+		// arrowhead
+		const h = A.width * 3.2, ang = Math.atan2(dir[1], dir[0]);
+		g.translate(tip[0], tip[1]);
+		g.rotate(ang);
+		g.beginPath();
+		g.moveTo(h, 0);
+		g.lineTo(-h * 0.7, -h * 0.8);
+		g.lineTo(-h * 0.25, 0);
+		g.lineTo(-h * 0.7, h * 0.8);
+		g.closePath();
+		g.fillStyle = "#ffd23a";
+		g.shadowColor = "#ff9a1a";
+		g.shadowBlur = 40 * pulse;
+		g.fill();
+		g.fill();
+		g.restore();
 	};
 
-	// Price grid
-	ctx.strokeStyle = "rgba(120,160,220,0.14)";
-	ctx.lineWidth = 1;
-	for (let y = 40; y < h; y += 56) {
-		ctx.beginPath();
-		ctx.moveTo(0, y);
-		ctx.lineTo(w, y);
-		ctx.stroke();
-	}
-	for (let x = 0; x < w; x += 64) {
-		ctx.beginPath();
-		ctx.moveTo(x, 0);
-		ctx.lineTo(x, h);
-		ctx.stroke();
-	}
+	const step = () => {
+		const v = volStep();
+		g.clearRect(0, 0, c.width, c.height);
+		g.lineJoin = "round";
 
-	// Candlesticks from a loop-closed random walk (upward bias baked out so
-	// the last candle meets the first across the seam).
-	const N = 32;
-	const step = w / N;
-	const walk = [0];
-	for (let i = 1; i <= N; i++) walk.push(walk[i - 1] + (rand() - 0.44) * 46);
-	const drift = walk[N] / N;
-	const vals = walk.map((v, i) => v - drift * i); // vals[0] === vals[N]
-	const mid = h * 0.52;
-	for (let i = 0; i < N; i++) {
-		const open = mid - vals[i];
-		const close = mid - vals[i + 1];
-		const up = close < open;
-		const x = i * step + step * 0.5;
-		const top = Math.min(open, close);
-		const body = Math.max(6, Math.abs(close - open));
-		ctx.strokeStyle = up ? "rgba(46,204,113,0.8)" : "rgba(231,76,60,0.8)";
-		ctx.fillStyle = up ? "rgba(46,204,113,0.65)" : "rgba(231,76,60,0.65)";
-		ctx.lineWidth = 2;
-		ctx.beginPath(); // wick
-		ctx.moveTo(x, top - 8 - rand() * 18);
-		ctx.lineTo(x, top + body + 8 + rand() * 18);
-		ctx.stroke();
-		ctx.fillRect(x - step * 0.28, top, step * 0.56, body);
-	}
+		// candles: new bar every 6 steps, live bar mutates in between
+		if (frame++ % 6 === 0) {
+			candles.shift();
+			candles.push(nextCandle(v));
+		} else {
+			const k = candles.at(-1);
+			k.c = clamp(k.c + srnd(-1, 1) * 0.003 * v, cy - 0.16, cy + 0.16);
+			k.h = Math.min(k.h, k.c);
+			k.l = Math.max(k.l, k.c);
+		}
+		const bw = c.width / N;
+		candles.forEach((k, i) => {
+			const x = i * bw + bw / 2, up = k.c < k.o;
+			const col = up ? "#3dff8a" : "#ff4a55";
+			g.strokeStyle = g.fillStyle = col;
+			g.shadowColor = col;
+			g.shadowBlur = 14 * Math.min(v, 3);
+			g.lineWidth = 1.5;
+			g.beginPath();
+			g.moveTo(x, k.h * c.height);
+			g.lineTo(x, k.l * c.height);
+			g.stroke();
+			const top = Math.min(k.o, k.c) * c.height;
+			const hgt = Math.max(2, Math.abs(k.c - k.o) * c.height);
+			g.fillRect(x - bw * 0.3, top, bw * 0.6, hgt);
+		});
+		g.shadowBlur = 0;
 
-	// The stonks trend line: the same closed loop, drawn glowing orange.
-	ctx.strokeStyle = "rgba(255,150,40,0.9)";
-	ctx.lineWidth = 5;
-	ctx.shadowColor = "rgba(255,150,40,0.8)";
-	ctx.shadowBlur = 12;
-	ctx.beginPath();
-	for (let i = 0; i <= N; i++) {
-		const x = i * step;
-		const y = mid - vals[i] - 26;
-		i ? ctx.lineTo(x, y) : ctx.moveTo(x, y);
-	}
-	ctx.stroke();
-	ctx.shadowBlur = 0;
-
-	// Ticker band along the top, like the exchange wall.
-	ctx.font = "bold 26px monospace";
-	const tickers = [
-		["S&P 500  6,412.19  +1.42%", "#2ecc71"],
-		["NASDAQ  21,880.42  +2.03%", "#2ecc71"],
-		["DOW  44,318.55  -0.31%", "#e74c3c"],
-		["$STONK  0.0029  +70.2%", "#ffb028"],
-	];
-	tickers.forEach(([text, color], i) => {
-		ctx.fillStyle = color;
-		ctx.fillText(text, (i * w) / tickers.length + 12, 34);
-	});
-
-	const tex = new THREE.CanvasTexture(canvas);
-	tex.wrapS = THREE.RepeatWrapping;
-	tex.wrapT = THREE.ClampToEdgeWrapping;
-	tex.repeat.set(3, 1); // the band reads smaller, so it wraps the dome believably
-	return tex;
+		// index lines
+		for (const s of lines) {
+			s.data.shift();
+			s.data.push(clamp(s.data.at(-1) + (srnd(-1, 1) + shock()) * s.vol * v, s.y - 0.12, s.y + 0.12));
+			g.beginPath();
+			s.data.forEach((y, i) => g[i ? "lineTo" : "moveTo"]((i / (SKY_CFG.points - 1)) * c.width, y * c.height));
+			g.strokeStyle = s.color;
+			g.lineWidth = s.width;
+			g.shadowColor = s.color;
+			g.shadowBlur = 18;
+			g.stroke();
+			g.shadowBlur = 0;
+			g.strokeStyle = "rgba(255,255,255,0.7)"; // hot core
+			g.lineWidth = 1;
+			g.stroke();
+		}
+		drawArrow();
+		tex.needsUpdate = true;
+	};
+	return { tex, step };
 }
 
 let skyMesh = null;
+let skyGrid = null;
+let skyChart = null;
+let gridT = 0;
+let chartT = 0;
 
 function buildSky() {
 	// Only the upper half: below the horizon the terrain and water take over.
-	const geo = new THREE.SphereGeometry(420, 32, 20, 0, Math.PI * 2, 0, Math.PI * 0.58);
-	const map = skyTexture();
-	const mat = new THREE.MeshBasicMaterial({
-		map,
-		color: map ? 0xffffff : SKY,
-		side: THREE.BackSide,
-		depthWrite: false,
-		fog: false,
-	});
-	const mesh = new THREE.Mesh(geo, mat);
-	mesh.renderOrder = -1; // always behind the scenery
-	return mesh;
+	// Three concentric back-side shells; smaller radius renders in front.
+	const shell = (r) =>
+		new THREE.SphereGeometry(r, 32, 20, 0, Math.PI * 2, 0, Math.PI * 0.58);
+	const group = new THREE.Group();
+
+	const base = new THREE.Mesh(
+		shell(424),
+		new THREE.MeshBasicMaterial({ color: 0x0b2fc9, side: THREE.BackSide, depthWrite: false, fog: false }),
+	);
+	base.renderOrder = -3;
+	group.add(base);
+
+	if (typeof document === "undefined") return group; // node-side geometry checks
+
+	skyGrid = gridLayer();
+	const grid = new THREE.Mesh(
+		shell(420),
+		new THREE.MeshBasicMaterial({
+			map: skyGrid.tex, transparent: true, opacity: 0.95,
+			side: THREE.BackSide, depthWrite: false, fog: false,
+		}),
+	);
+	grid.renderOrder = -2;
+	group.add(grid);
+
+	skyChart = chartLayer();
+	const chart = new THREE.Mesh(
+		shell(414),
+		new THREE.MeshBasicMaterial({
+			map: skyChart.tex, transparent: true, blending: THREE.AdditiveBlending,
+			side: THREE.BackSide, depthWrite: false, fog: false,
+		}),
+	);
+	chart.renderOrder = -1;
+	group.add(chart);
+
+	return group;
 }
 
 let clock = 0;
@@ -254,8 +443,22 @@ let clock = 0;
 export function updateWorld(delta) {
 	clock += delta;
 
-	if (skyMesh && skyMesh.material.map) {
-		skyMesh.material.map.offset.x = (skyMesh.material.map.offset.x + delta * 0.004) % 1;
+	// The board drifts slowly, cells flicker, the chart trades in real time.
+	if (skyGrid) {
+		skyGrid.tex.offset.x = (skyGrid.tex.offset.x + delta * 0.004) % 1;
+		skyGrid.tex.offset.y = (skyGrid.tex.offset.y - delta * 0.002 + 1) % 1;
+		gridT += delta;
+		if (gridT > SKY_CFG.tick) {
+			gridT = 0;
+			skyGrid.tick();
+		}
+	}
+	if (skyChart) {
+		chartT += delta;
+		if (chartT > SKY_CFG.step) {
+			chartT = 0;
+			skyChart.step();
+		}
 	}
 
 	if (waterMesh && waterRest) {
