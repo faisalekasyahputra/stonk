@@ -141,6 +141,38 @@ if (!document.getElementById("crt-overlay")) {
 	document.body.appendChild(crt);
 }
 
+// Corner music toggle: a hidden YouTube embed does the playback, the first
+// click creates it (autoplay needs that user gesture), later clicks just
+// play/pause it over the iframe API postMessage channel.
+if (!document.getElementById("music-toggle")) {
+	const MUSIC_ID = "bn8gP5N8hqM";
+	const btn = document.createElement("button");
+	btn.id = "music-toggle";
+	btn.innerHTML = "&#9835; OFF";
+	btn.title = "Music on/off";
+	document.body.appendChild(btn);
+	let player = null;
+	let musicOn = false;
+	btn.onclick = () => {
+		musicOn = !musicOn;
+		btn.innerHTML = musicOn ? "&#9835; ON" : "&#9835; OFF";
+		btn.classList.toggle("on", musicOn);
+		if (!player) {
+			player = document.createElement("iframe");
+			player.allow = "autoplay";
+			player.style.cssText =
+				"position:fixed;width:1px;height:1px;opacity:0;pointer-events:none;border:0;";
+			player.src = `https://www.youtube.com/embed/${MUSIC_ID}?enablejsapi=1&autoplay=1&loop=1&playlist=${MUSIC_ID}`;
+			document.body.appendChild(player);
+		} else {
+			player.contentWindow.postMessage(
+				JSON.stringify({ event: "command", func: musicOn ? "playVideo" : "pauseVideo", args: [] }),
+				"*",
+			);
+		}
+	};
+}
+
 // Set initial camera position after setup
 camera.position.set(0, 2, 7);
 controls.target.set(0, 1.5, 0);
