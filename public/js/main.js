@@ -153,22 +153,37 @@ if (!document.getElementById("music-toggle")) {
 	document.body.appendChild(btn);
 	let player = null;
 	let musicOn = false;
+	const buildPlayer = () => {
+		const host = document.createElement("div");
+		host.id = "music-player";
+		host.style.cssText =
+			"position:fixed;bottom:-200px;right:0;width:200px;height:113px;opacity:0.01;pointer-events:none;";
+		document.body.appendChild(host);
+		window.__music = player = new window.YT.Player("music-player", {
+			videoId: MUSIC_ID,
+			playerVars: { autoplay: 1, loop: 1, playlist: MUSIC_ID },
+			events: {
+				onReady: (e) => {
+					e.target.setVolume(60);
+					e.target.playVideo();
+				},
+			},
+		});
+	};
 	btn.onclick = () => {
 		musicOn = !musicOn;
 		btn.innerHTML = musicOn ? "&#9835; ON" : "&#9835; OFF";
 		btn.classList.toggle("on", musicOn);
 		if (!player) {
-			player = document.createElement("iframe");
-			player.allow = "autoplay";
-			player.style.cssText =
-				"position:fixed;width:1px;height:1px;opacity:0;pointer-events:none;border:0;";
-			player.src = `https://www.youtube.com/embed/${MUSIC_ID}?enablejsapi=1&autoplay=1&loop=1&playlist=${MUSIC_ID}`;
-			document.body.appendChild(player);
-		} else {
-			player.contentWindow.postMessage(
-				JSON.stringify({ event: "command", func: musicOn ? "playVideo" : "pauseVideo", args: [] }),
-				"*",
-			);
+			// First click: pull in the official IFrame API, it handles the
+			// play handshake that a raw embed's autoplay param loses.
+			if (window.YT && window.YT.Player) return buildPlayer();
+			window.onYouTubeIframeAPIReady = buildPlayer;
+			const s = document.createElement("script");
+			s.src = "https://www.youtube.com/iframe_api";
+			document.head.appendChild(s);
+		} else if (player.playVideo) {
+			musicOn ? player.playVideo() : player.pauseVideo();
 		}
 	};
 }
