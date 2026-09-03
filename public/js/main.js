@@ -273,7 +273,12 @@ loader.load(
 		if (gltf.animations && gltf.animations.length) clips.push(gltf.animations[0]);
 		for (const file of ANIM_FILES.slice(1)) {
 			loader.load("assets/stonk/" + file, (g) => {
-				if (g.animations && g.animations.length) clips.push(g.animations[0]);
+				if (g.animations && g.animations.length) {
+					clips.push(g.animations[0]);
+					// Warm the action now: binding a clip on first play allocates and
+					// can drop a frame, which reads as the model blinking out.
+					mixer.clipAction(g.animations[0]);
+				}
 			});
 		}
 		playRandomClip();
@@ -471,12 +476,13 @@ function animate() {
 
 		const speed = SPEEDS[currentAction.getClip().name] || 0;
 		if (speed) {
-			const nx = loadedModel.position.x - Math.sin(heading) * speed * delta;
-			const nz = loadedModel.position.z - Math.cos(heading) * speed * delta;
+			// Flipped from -sin/-cos: the strides read backwards the other way.
+			const nx = loadedModel.position.x + Math.sin(heading) * speed * delta;
+			const nz = loadedModel.position.z + Math.cos(heading) * speed * delta;
 			if (Math.hypot(nx, nz) > ROAM_LIMIT) {
 				// Nearing the lagoon: turn back toward the middle, with some wobble
 				// so he never ping-pongs along the same line.
-				targetHeading = Math.atan2(nx, nz) + (Math.random() - 0.5);
+				targetHeading = Math.atan2(-nx, -nz) + (Math.random() - 0.5);
 			} else {
 				loadedModel.position.set(nx, WORLD_Y + heightAt(nx, nz), nz);
 			}
