@@ -28,6 +28,9 @@ function setupScene() {
 	camera.position.set(0, 2, 7); // Set initial position
 
 	renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+	// Render at device resolution (capped at 1.5x to stay light) so edges and
+	// the 2k character texture stop looking jagged on HiDPI screens.
+	renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5));
 
 	renderer.setSize(window.innerWidth, window.innerHeight);
 	renderer.shadowMap.enabled = false; // Disable shadows

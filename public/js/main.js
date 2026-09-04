@@ -304,7 +304,17 @@ loader.load(
 				// no light rig can tint the character. Lights still shape the genital
 				// on layer 2, which keeps its own MeshStandardMaterial.
 				const map = child.material && child.material.map;
-				if (map) map.encoding = THREE.LinearEncoding;
+				if (map) {
+					map.encoding = THREE.LinearEncoding;
+					// The atlas is a 2k patchwork of UV islands; without anisotropy it
+					// smears into speckle and dark seams whenever the model is small or
+					// seen at a glancing angle. Trilinear mipmaps + max anisotropy fix that.
+					map.anisotropy = renderer.capabilities.getMaxAnisotropy();
+					map.minFilter = THREE.LinearMipmapLinearFilter;
+					map.magFilter = THREE.LinearFilter;
+					map.generateMipmaps = true;
+					map.needsUpdate = true;
+				}
 				child.material = new THREE.MeshBasicMaterial({
 					map: map || null,
 					skinning: true, // three r128 needs this flag on skinned meshes
