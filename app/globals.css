@@ -823,3 +823,22 @@ canvas {
     border-color: #145718;
     box-shadow: inset 0 1px 0 #7fd884, 0 1px 3px rgba(0, 0, 0, 0.4);
 }
+
+/* --- Mobile: taskbar window buttons swipe sideways instead of clipping --- */
+@media (max-width: 870px) {
+    .xp-task-items {
+        justify-content: flex-start;
+        overflow-x: auto;
+        overflow-y: hidden;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+        scroll-snap-type: x proximity;
+    }
+    .xp-task-items::-webkit-scrollbar {
+        display: none;
+    }
+    .xp-task-item {
+        flex: 0 0 auto;
+        scroll-snap-align: start;
+    }
+}
