@@ -57,30 +57,40 @@ function setupScene() {
 		RIGHT: THREE.MOUSE.ROTATE,
 	};
 
-	// --- Lights ---
-
-	// Monkey Lights (Target Layer 1 - mask: 2)
-	ambientLight = new THREE.AmbientLight(0xffffff, 0); // User requested 0
-	ambientLight.layers.mask = 2; // Strict Layer 1
+	// --- Lights: a cinematic three-point rig on the character (layer 1) and
+	// the genital (layer 2), mask 6 = both. Everything rides the camera so the
+	// key always models the face from front-right no matter where the orbit is.
+	// Sky/ground bounce instead of flat ambient: cool from above, warm from grass.
+	ambientLight = new THREE.HemisphereLight(0x9fc3ff, 0x4a3a20, 0.55);
+	ambientLight.layers.mask = 6;
 	scene.add(ambientLight);
 
-	directionalLight = new THREE.DirectionalLight(0xffffff, 2.07); // User requested 2.07
-	directionalLight.position.set(5, 10, 7.5);
+	// Key: warm, high, front-right. Intensity is the main exposure knob.
+	directionalLight = new THREE.DirectionalLight(0xfff0d8, 1.35);
+	directionalLight.position.set(4, 8, 6);
 	directionalLight.castShadow = false;
-	directionalLight.layers.mask = 2; // Strict Layer 1
-	camera.add(directionalLight); // Relative to camera
+	directionalLight.layers.mask = 6;
+	camera.add(directionalLight);
 
-	// Genital Lights (Target Layer 2 - mask: 4)
-	// Kept near a total of 1.0: the body is unlit, so anything higher makes the
-	// same hex render brighter than Jemo's face.
-	genitalAmbientLight = new THREE.AmbientLight(0xffffff, 0.55);
-	genitalAmbientLight.layers.mask = 4; // Strict Layer 2
+	// Fill: cool, low, front-left, keeps shadows from going black.
+	const fillLight = new THREE.DirectionalLight(0x7fa8ff, 0.45);
+	fillLight.position.set(-6, 3, 4);
+	fillLight.layers.mask = 6;
+	camera.add(fillLight);
+
+	// Rim: warm backlight that outlines the silhouette against the sky.
+	const rimLight = new THREE.DirectionalLight(0xffc38a, 0.9);
+	rimLight.position.set(0, 5, -8);
+	rimLight.layers.mask = 6;
+	camera.add(rimLight);
+
+	// The old genital-only lights stay for the GUI but are folded into the rig.
+	genitalAmbientLight = new THREE.AmbientLight(0xffffff, 0);
+	genitalAmbientLight.layers.mask = 4;
 	scene.add(genitalAmbientLight);
-
-	genitalDirectionalLight = new THREE.DirectionalLight(0xffffff, 0.5);
-	genitalDirectionalLight.position.set(-5, 5, 5);
-	genitalDirectionalLight.layers.mask = 4; // Strict Layer 2
-	camera.add(genitalDirectionalLight); // Relative to camera
+	genitalDirectionalLight = new THREE.DirectionalLight(0xffffff, 0);
+	genitalDirectionalLight.layers.mask = 4;
+	camera.add(genitalDirectionalLight);
 
 	scene.add(camera);
 

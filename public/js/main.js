@@ -298,25 +298,23 @@ loader.load(
 				child.castShadow = true;
 				child.receiveShadow = true;
 				child.layers.mask = 2; // Strict Layer 1 for monkey model
-				// Show the baked texture exactly as authored. An unlit material ignores
-				// every light, and passing the map through unconverted (the renderer
-				// outputs linear) puts the texture's own pixels straight on screen, so
-				// no light rig can tint the character. Lights still shape the genital
-				// on layer 2, which keeps its own MeshStandardMaterial.
+				// Lit material so the three-point rig can model the face and suit.
+				// The map stays LinearEncoding (renderer outputs linear) so the baked
+				// colours read as authored; roughness keeps the suit matte with a
+				// soft sheen on the head instead of plastic highlights.
 				const map = child.material && child.material.map;
 				if (map) {
 					map.encoding = THREE.LinearEncoding;
-					// The atlas is a 2k patchwork of UV islands; without anisotropy it
-					// smears into speckle and dark seams whenever the model is small or
-					// seen at a glancing angle. Trilinear mipmaps + max anisotropy fix that.
 					map.anisotropy = renderer.capabilities.getMaxAnisotropy();
 					map.minFilter = THREE.LinearMipmapLinearFilter;
 					map.magFilter = THREE.LinearFilter;
 					map.generateMipmaps = true;
 					map.needsUpdate = true;
 				}
-				child.material = new THREE.MeshBasicMaterial({
+				child.material = new THREE.MeshStandardMaterial({
 					map: map || null,
+					roughness: 0.6,
+					metalness: 0.05,
 					skinning: true, // three r128 needs this flag on skinned meshes
 				});
 			}
