@@ -10,7 +10,7 @@ import {
 } from "./dynamicPart.js?v=20260830-skin2";
 import { createGUI, addModelControls } from "./ui.js?v=20260830-skin2";
 import { MatrixRain } from "./matrixRain.js?v=20260830-skin2";
-import { createWorld, plantProp, updateWorld, heightAt } from "./world.js?v=20260830-skin2";
+import { createWorld, updateWorld, heightAt } from "./world.js?v=20260830-skin2";
 import { startDataUpdates, TOKEN_ADDRESS } from "./data.js?v=20260830-skin2";
 
 // --- Windows XP UI Logic ---
@@ -216,14 +216,6 @@ dracoLoader.setDecoderPath(
 );
 loader.setDRACOLoader(dracoLoader);
 
-// Scenery props generated with Meshy. Each one is measured on load and lifted by
-// its own base, so it sits on the terrain instead of sinking into it.
-for (const [file, opts] of [
-	["assets/world/jemo-tree.glb", { count: 16, minRadius: 20, maxRadius: 42, height: 12, vary: 0.45, seed: 11 }],
-	["assets/world/jemo-grass.glb", { count: 70, minRadius: 7, maxRadius: 44, height: 1.7, vary: 0.55, seed: 29 }],
-]) {
-	loader.load(file, (gltf) => plantProp(world, gltf.scene, opts));
-}
 // The rigged mesh measures 1.70 units tall where the old asset measured 1.10,
 // so every distance from the original contract is rescaled by this factor.
 const RIG_K = 1.1 / 1.7;
@@ -321,6 +313,17 @@ loader.load(
 		});
 
 		scene.add(loadedModel);
+
+		// Character is in: lift the blur-fade loading curtain. The flag lives on
+		// <html> (CSS: .scene-ready #load-curtain) so it survives React re-rendering
+		// the legacy markup underneath us.
+		setTimeout(() => {
+			document.documentElement.classList.add("scene-ready");
+			setTimeout(() => {
+				const c = document.getElementById("load-curtain");
+				if (c) c.remove();
+			}, 1500);
+		}, 60);
 
 		// Animation set: the base file's clip plus one clip from each sibling file.
 		// The rigs are identical, so foreign clips bind by bone name without retargeting.

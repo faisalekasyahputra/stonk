@@ -23,15 +23,8 @@ const SHORE = 62; // past here the ground is under water
 // Deterministic rolling hills. Flat inside RADIUS_FLAT so Jemo always has level
 // ground under his feet no matter where the camera swings.
 const RADIUS_FLAT = 13;
-export function heightAt(x, z) {
-	const r = Math.hypot(x, z);
-	const rolling =
-		1.7 * Math.sin(x * 0.105) * Math.cos(z * 0.125) +
-		1.0 * Math.sin((x + z) * 0.062) +
-		0.6 * Math.cos(x * 0.21 - z * 0.17);
-	const rise = smoothstep(RADIUS_FLAT, RADIUS_FLAT + 14, r);
-	const drop = smoothstep(ISLAND, SHORE, r);
-	return rolling * rise - drop * 9;
+export function heightAt() {
+	return 0; // trading floor is flat; kept for the locomotion code
 }
 
 function smoothstep(a, b, x) {
@@ -704,22 +697,61 @@ function buildFoam() {
 	return mesh;
 }
 
+
 /**
- * Adds the scenery under the character. groundY is where Jemo's feet sit, so the
- * flat middle of the terrain is placed exactly there.
+ * Trading-floor tiles: dark glossy slabs with a thin cyan grid seam, so the
+ * floor reads like the same exchange as the board on the walls. One 256px
+ * canvas, tiled.
+ */
+function floorTexture() {
+	if (typeof document === 'undefined') return null;
+	const size = 256;
+	const c = document.createElement('canvas');
+	c.width = c.height = size;
+	const g = c.getContext('2d');
+	g.fillStyle = '#0a1a3a';
+	g.fillRect(0, 0, size, size);
+	// subtle slab shading
+	const grad = g.createLinearGradient(0, 0, size, size);
+	grad.addColorStop(0, 'rgba(60,110,220,0.18)');
+	grad.addColorStop(0.5, 'rgba(0,0,0,0)');
+	grad.addColorStop(1, 'rgba(60,110,220,0.12)');
+	g.fillStyle = grad;
+	g.fillRect(0, 0, size, size);
+	// grid seam
+	g.strokeStyle = 'rgba(90,200,255,0.55)';
+	g.lineWidth = 3;
+	g.strokeRect(1.5, 1.5, size - 3, size - 3);
+	g.strokeStyle = 'rgba(90,200,255,0.18)';
+	g.lineWidth = 1;
+	g.beginPath(); g.moveTo(size / 2, 0); g.lineTo(size / 2, size); g.moveTo(0, size / 2); g.lineTo(size, size / 2); g.stroke();
+	const tex = new THREE.CanvasTexture(c);
+	tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+	tex.repeat.set(60, 60);
+	tex.anisotropy = 8;
+	return tex;
+}
+
+function buildFloor() {
+	const geo = new THREE.PlaneGeometry(600, 600);
+	geo.rotateX(-Math.PI / 2);
+	const map = floorTexture();
+	return new THREE.Mesh(
+		geo,
+		new THREE.MeshBasicMaterial({ map, color: map ? 0xffffff : 0x0a1a3a }),
+	);
+}
+
+/**
+ * Adds the scenery under the character: a flat trading floor and the board
+ * sky. groundY is where the character's feet sit.
  */
 export function createWorld(scene, groundY = -3.12) {
 	const world = new THREE.Group();
 	world.position.y = groundY;
 
-	world.add(buildTerrain());
+	world.add(buildFloor());
 
-	waterMesh = buildWater();
-	world.add(waterMesh);
-	foamRing = buildFoam();
-	world.add(foamRing);
-
-	// Ring the clearing with trees, skipping the front so the camera keeps a view.
 	skyMesh = buildSky();
 	world.add(skyMesh);
 

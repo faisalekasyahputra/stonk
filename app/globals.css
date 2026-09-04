@@ -28,15 +28,8 @@
 
 body {
     margin: 0;
-    background-color: #008080;
-    /* Classic Desktop Color */
-    /* Windows XP Wallpaper */
-    background-image: url('/assets/bg.avif');
-    background-size: cover;
-    background-position: center;
-    background-attachment: fixed;
-    background-repeat: no-repeat;
-    background-color: #008080;
+    /* Trading-floor navy: only the 3D scene ever shows behind the UI. */
+    background-color: #0b2fc9;
     color: var(--text-light);
     font-family: 'Tahoma', 'Byrd', sans-serif;
     overflow: hidden;
@@ -842,3 +835,32 @@ canvas {
         scroll-snap-align: start;
     }
 }
+
+/* --- Loading curtain: opaque navy + blur, fades and un-blurs once the 3D is in --- */
+#load-curtain {
+    position: fixed;
+    inset: 0;
+    z-index: 100000;
+    background: radial-gradient(ellipse at center, #1440d8 0%, #071a4f 100%);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: opacity 1.2s ease, backdrop-filter 1.2s ease, -webkit-backdrop-filter 1.2s ease;
+}
+.scene-ready #load-curtain {
+    opacity: 0;
+    backdrop-filter: blur(0);
+    -webkit-backdrop-filter: blur(0);
+    pointer-events: none;
+}
+.load-spinner {
+    width: 44px;
+    height: 44px;
+    border: 4px solid rgba(255, 255, 255, 0.25);
+    border-top-color: #ffb028;
+    border-radius: 50%;
+    animation: load-spin 0.9s linear infinite;
+}
+@keyframes load-spin { to { transform: rotate(360deg); } }
