@@ -314,16 +314,8 @@ loader.load(
 
 		scene.add(loadedModel);
 
-		// Character is in: lift the blur-fade loading curtain. The flag lives on
-		// <html> (CSS: .scene-ready #load-curtain) so it survives React re-rendering
-		// the legacy markup underneath us.
-		setTimeout(() => {
-			document.documentElement.classList.add("scene-ready");
-			setTimeout(() => {
-				const c = document.getElementById("load-curtain");
-				if (c) c.remove();
-			}, 1500);
-		}, 60);
+		// The curtain waits for both the model and the three-second arrow animation.
+		document.documentElement.classList.add("model-ready");
 
 		// Animation set: the base file's clip plus one clip from each sibling file.
 		// The rigs are identical, so foreign clips bind by bone name without retargeting.
