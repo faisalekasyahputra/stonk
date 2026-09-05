@@ -245,7 +245,11 @@ let loopCount = 0;
 // --- Locomotion: Walking/Running actually travel across the island ---
 const WORLD_Y = -3.12; // where the terrain group sits
 const ROAM_LIMIT = 34; // grass turns to sand/lagoon past ~40, turn back before it
-const SPEEDS = { Walking: 1.3, Running: 3.6 }; // units/s, eyeballed to the strides
+const SPEEDS = { walking: 1.3, running: 3.6 }; // units/s, eyeballed to the strides
+
+// Meshy renames its clips between exports ("Armature|walking_man|baselayer"),
+// so clips are keyed by the filename we chose instead.
+const clipNameFor = (file) => file.replace(/\.glb$/i, "");
 let heading = Math.PI; // current facing (starts toward the camera)
 let targetHeading = Math.PI;
 
@@ -328,10 +332,14 @@ loader.load(
 		// Animation set: the base file's clip plus one clip from each sibling file.
 		// The rigs are identical, so foreign clips bind by bone name without retargeting.
 		mixer = new THREE.AnimationMixer(loadedModel);
-		if (gltf.animations && gltf.animations.length) clips.push(gltf.animations[0]);
+		if (gltf.animations && gltf.animations.length) {
+			gltf.animations[0].name = clipNameFor(ANIM_FILES[0]);
+			clips.push(gltf.animations[0]);
+		}
 		for (const file of ANIM_FILES.slice(1)) {
 			loader.load("assets/stonk/" + file, (g) => {
 				if (g.animations && g.animations.length) {
+					g.animations[0].name = clipNameFor(file);
 					clips.push(g.animations[0]);
 					// Warm the action now: binding a clip on first play allocates and
 					// can drop a frame, which reads as the model blinking out.
