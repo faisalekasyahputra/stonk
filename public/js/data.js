@@ -5,6 +5,11 @@ export let TOKEN_ADDRESS =
 // has already been evaluated.
 let CHAIN_ID = runtimeConfig.chainId || "solana";
 
+// How often the market is polled. DexScreener allows 300 requests per minute
+// per IP on these endpoints and this runs per visitor, so 2s (30/min) keeps a
+// wide margin even when a cycle fires the fallback search as well.
+export const POLL_MS = 2000;
+
 let lastUpdate = null;
 let nextUpdateTime = null;
 let currentScale = 0.1; // Default scale for 10cm
@@ -297,7 +302,7 @@ function updateDisplayWithData(tokenData, updateArbreCallback) {
 
 	// 5. Connection Status
 	lastUpdate = new Date();
-	nextUpdateTime = Date.now() + 5000;
+	nextUpdateTime = Date.now() + POLL_MS;
 	const updateTimeEl = document.getElementById("update-time");
 	if (updateTimeEl) updateTimeEl.textContent = lastUpdate.toLocaleTimeString();
 
@@ -387,7 +392,7 @@ async function updateMarketCap(updateArbreCallback) {
 				connectionLabel.textContent = "Pair Not Found";
 				connectionLabel.style.color = "red"; // Set text to red for errors
 			}
-			nextUpdateTime = Date.now() + 5000;
+			nextUpdateTime = Date.now() + POLL_MS;
 			return;
 		}
 	}
@@ -424,7 +429,7 @@ async function updateMarketCap(updateArbreCallback) {
 			connectionLabel.textContent = "Error";
 			connectionLabel.style.color = "red"; // Set text to red for errors
 		}
-		nextUpdateTime = Date.now() + 5000;
+		nextUpdateTime = Date.now() + POLL_MS;
 	}
 }
 
@@ -537,7 +542,7 @@ function startDataUpdates(updateArbreCallback) {
 	);
 	updateCallback = updateArbreCallback;
 	updateMarketCap(updateArbreCallback);
-	setInterval(() => updateMarketCap(updateArbreCallback), 5000); // Update every 5 seconds
+	setInterval(() => updateMarketCap(updateArbreCallback), POLL_MS);
 	updateCountdown();
 	setInterval(() => updateCountdown(), 1000);
 }
