@@ -16,10 +16,10 @@ export const metadata = {
 			"Meet STONK whose penis size changes based on token market cap! Watch it grow and shrink in real-time.",
 		images: [
 			{
-				url: "/assets/og-stonk-market.png",
+				url: "/assets/og-stonk-market.jpg",
 				width: 1200,
 				height: 630,
-				alt: "STONK market banner",
+				alt: "STONK holding a stack of cash in an art gallery",
 			},
 		],
 		type: "website",
@@ -29,7 +29,7 @@ export const metadata = {
 		title: "Stonk",
 		description:
 			"Meet STONK whose penis size changes based on token market cap! Watch it grow and shrink in real-time.",
-		images: ["/assets/og-stonk-market.png"],
+		images: ["/assets/og-stonk-market.jpg"],
 	},
 };
 
