@@ -1,7 +1,9 @@
 const runtimeConfig = window.__APP_CONFIG__ || {};
 export let TOKEN_ADDRESS =
 	runtimeConfig.tokenAddress || "";
-const CHAIN_ID = runtimeConfig.chainId || "solana";
+// Not a const: the chain arrives with the Supabase config, after this module
+// has already been evaluated.
+let CHAIN_ID = runtimeConfig.chainId || "solana";
 
 let lastUpdate = null;
 let nextUpdateTime = null;
@@ -144,6 +146,11 @@ async function findPairAddress(contractAddress, chainId) {
 
 // Add event listener to dynamically update TOKEN_ADDRESS from React
 window.addEventListener("tokenAddressUpdated", (e) => {
+	if (e.detail && e.detail.chainId && CHAIN_ID !== e.detail.chainId) {
+		console.log(`[DEBUG] Chain switched to: ${e.detail.chainId}`);
+		CHAIN_ID = e.detail.chainId;
+		foundPairAddress = null; // pairs are per-chain, so the old one is void
+	}
 	if (e.detail && e.detail.address && TOKEN_ADDRESS !== e.detail.address) {
 		console.log(
 			`[DEBUG] Received new token address from React: ${e.detail.address}`,

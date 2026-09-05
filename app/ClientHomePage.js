@@ -182,17 +182,26 @@ export default function ClientHomePage({
 		if (config && typeof window !== "undefined") {
 			console.log("[DEBUG] Syncing data from Supabase:", config);
 
-			// Update runtime config dynamically
+			// The chart URL names the chain (dexscreener.com/<chain>/<pair>), so the
+			// price lookup follows the token off Solana without another config field.
+			let chainId;
+			try {
+				const parts = new URL(config.dexscreener_url).pathname.split("/");
+				chainId = parts.filter(Boolean)[0]?.toLowerCase();
+			} catch {
+				// No chart URL yet, so the chain stays whatever it already was.
+			}
+
 			window.__APP_CONFIG__ = {
 				...window.__APP_CONFIG__,
 				tokenAddress: config.contract_address,
-				pairAddress: config.dexscreener_url || "",
+				...(chainId ? { chainId } : {}),
 			};
 
 			// Dispatch event for data.js to pick up
 			window.dispatchEvent(
 				new CustomEvent("tokenAddressUpdated", {
-					detail: { address: config.contract_address },
+					detail: { address: config.contract_address, chainId },
 				}),
 			);
 
@@ -250,9 +259,11 @@ export default function ClientHomePage({
 					"#twitter-panel .xp-content",
 				);
 
-				if (config.twitter_url && panelContent) {
-					// Extract handle from URL, fallback to default handle
-					const handleMatch = config.twitter_url.match(
+				// telegram_url holds the tracking bot's X account; the main account is
+				// the fallback so the panel is never empty.
+				const feedUrl = config.telegram_url || config.twitter_url;
+				if (feedUrl && panelContent) {
+					const handleMatch = feedUrl.match(
 						/(?:twitter\.com|x\.com)\/([^\/?]+)/,
 					);
 					const handle = handleMatch ? handleMatch[1] : "stonkpons";
@@ -281,14 +292,16 @@ export default function ClientHomePage({
 			};
 
 			// Run immediately and also after a short delay to ensure DOM is ready
-			try { updateLinks(); } catch (e) { window.__linkErr = String(e && e.stack || e); }
+			updateLinks();
 			updateTwitterEmbed();
 			setTimeout(() => {
 				updateLinks();
 				updateTwitterEmbed();
 			}, 1000);
 		}
-	}, [config, html]);
+		// showPreloader is a dependency because unmounting the curtain re-renders
+		// the legacy markup, which throws away the link edits made above.
+	}, [config, html, showPreloader]);
 
 	return (
 		<>
