@@ -871,3 +871,43 @@ canvas {
     z-index: 1;
     pointer-events: none;
 }
+
+/* --- "Meet STONK!" title: lime-to-orange gradient with a shimmer sweep --- */
+#info-panel h2.stonk-title,
+.stonk-title {
+    margin: 0 0 14px;
+    font-size: 40px;
+    line-height: 1.1;
+    font-weight: 900;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    /* The stripe repeats, so sliding the background 200% loops seamlessly. */
+    background: linear-gradient(
+        100deg,
+        #c5ff00 0%,
+        #ff9a1a 22%,
+        #ffd23a 34%,
+        #ff6a00 46%,
+        #c5ff00 62%,
+        #ff9a1a 84%,
+        #c5ff00 100%
+    );
+    background-size: 200% 100%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    -webkit-text-fill-color: transparent;
+    /* Gradient text cannot take a text-shadow, so the glow rides the glyphs. */
+    filter: drop-shadow(0 1px 0 rgba(0, 0, 0, 0.35))
+        drop-shadow(0 0 14px rgba(255, 154, 26, 0.45));
+    animation: stonk-shimmer 3.2s linear infinite;
+}
+@keyframes stonk-shimmer {
+    to { background-position: -200% 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .stonk-title { animation: none; }
+}
+@media (max-width: 870px) {
+    .stonk-title { font-size: 32px; }
+}
