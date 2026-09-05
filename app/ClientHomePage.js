@@ -219,7 +219,8 @@ export default function ClientHomePage({
 				if (caBox && config.contract_address) {
 					caBox.textContent = config.contract_address;
 				}
-				const ca = caBox?.textContent?.trim() || "";
+				const caText = caBox?.textContent?.trim() || "";
+				const ca = caText.toLowerCase() === "coming soon" ? "" : caText;
 
 				// Buy always goes to the Pons launchpad; the icon is only useful
 				// once there is an address to send people to.
@@ -280,7 +281,7 @@ export default function ClientHomePage({
 			};
 
 			// Run immediately and also after a short delay to ensure DOM is ready
-			updateLinks();
+			try { updateLinks(); } catch (e) { window.__linkErr = String(e && e.stack || e); }
 			updateTwitterEmbed();
 			setTimeout(() => {
 				updateLinks();

@@ -1,6 +1,6 @@
 const runtimeConfig = window.__APP_CONFIG__ || {};
 export let TOKEN_ADDRESS =
-	runtimeConfig.tokenAddress || "2ADR43Dcecc7HQPBKPcKKHBN5BjfWvPpFo483bjzpump";
+	runtimeConfig.tokenAddress || "";
 const CHAIN_ID = runtimeConfig.chainId || "solana";
 
 let lastUpdate = null;

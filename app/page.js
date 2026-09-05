@@ -22,7 +22,7 @@ const runtimeConfig = JSON.stringify(
 	{
 		tokenAddress:
 			process.env.NEXT_PUBLIC_TOKEN_ADDRESS ||
-			"2ADR43Dcecc7HQPBKPcKKHBN5BjfWvPpFo483bjzpump",
+			"",
 		pairAddress: process.env.NEXT_PUBLIC_PAIR_ADDRESS || "",
 		chainId: process.env.NEXT_PUBLIC_CHAIN_ID || "solana",
 	},

@@ -90,12 +90,20 @@ if (startAbout) {
 	startAbout.onclick = () => window.toggleWindow("info-panel");
 }
 
+// The CA box doubles as the placeholder label, so callers must tell a real
+// address from "Coming Soon" before copying or linking.
+function readContractAddress() {
+	const text = document.getElementById("ca-box-address")?.textContent?.trim();
+	if (!text || text.toLowerCase() === "coming soon") return "";
+	return text;
+}
+window.readContractAddress = readContractAddress;
+
 const caDisplay = document.getElementById("ca-display");
 if (caDisplay) {
 	caDisplay.onclick = () => {
-		const ca = document.getElementById("ca-box-address")
-			? document.getElementById("ca-box-address").textContent
-			: "2ADR43Dcecc7HQPBKPcKKHBN5BjfWvPpFo483bjzpump";
+		const ca = readContractAddress();
+		if (!ca) return; // nothing minted yet, so there is nothing to copy
 		navigator.clipboard.writeText(ca);
 		alert("CA Copied: " + ca);
 	};
@@ -472,9 +480,8 @@ document.addEventListener("click", (e) => {
 
 	// Handle CA Copy
 	if (target.closest("#ca-display")) {
-		const ca =
-			document.getElementById("ca-box-address")?.textContent ||
-			"2ADR43Dcecc7HQPBKPcKKHBN5BjfWvPpFo483bjzpump";
+		const ca = readContractAddress();
+		if (!ca) return; // "Coming Soon" is a label, not an address
 		navigator.clipboard.writeText(ca);
 
 		const caBtn = target.closest("#ca-display");
