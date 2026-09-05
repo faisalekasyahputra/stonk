@@ -16,7 +16,7 @@ const WATER = new THREE.Color(0x2f7fd4);
 const TRUNK = new THREE.Color(0x8a5a2b);
 const LEAF = new THREE.Color(0x2f9b28);
 
-const SKY = 0x0b2fc9; // trading-floor blue, matches the board sky
+const SKY = 0xc5ff00; // stonk lime, matches the board sky
 const ISLAND = 46; // grass reaches this far, then falls to the shore
 const SHORE = 62; // past here the ground is under water
 
@@ -131,8 +131,8 @@ const SKY_CFG = {
 	cols: 24, rows: 32, cellW: 112, cellH: 48, // grid texture
 	lines: [
 		{ color: "#ff9a1a", width: 5, y: 0.46, vol: 0.010 }, // stonks orange
-		{ color: "#dff3ff", width: 3, y: 0.58, vol: 0.008 },
-		{ color: "#4de0ff", width: 3, y: 0.68, vol: 0.006 },
+		{ color: "#123300", width: 3, y: 0.58, vol: 0.006 },
+		{ color: "#2f6a00", width: 3, y: 0.68, vol: 0.005 },
 	],
 	candles: 48, candleY: 0.25, // candlestick row (canvas y 0..1)
 	arrow: { width: 22, speed: 0.008, hold: 2.5 },
@@ -163,16 +163,16 @@ function gridLayer() {
 	const draw = (k) => {
 		const { x, y } = k;
 		g.clearRect(x, y, cellW, cellH);
-		g.strokeStyle = "rgba(140,190,255,0.35)";
+		g.strokeStyle = "rgba(30,62,0,0.32)";
 		g.lineWidth = 2;
 		g.strokeRect(x, y, cellW, cellH); // board grid
 		if (k.boxed) {
-			g.fillStyle = `rgba(40,95,235,${srnd(0.5, 0.9)})`;
+			g.fillStyle = `rgba(160,214,0,${srnd(0.55, 0.95)})`;
 			g.fillRect(x + 1, y + 1, cellW - 2, cellH - 2);
 		}
 		if (k.tri) { // up/down marker
 			const cx = x + cellW / 2, cy = y + cellH / 2, h = 12;
-			g.fillStyle = "rgba(190,225,255,0.9)";
+			g.fillStyle = "rgba(22,46,0,0.85)";
 			g.beginPath();
 			g.moveTo(cx - h, cy + h * k.dir * 0.6);
 			g.lineTo(cx + h, cy + h * k.dir * 0.6);
@@ -183,11 +183,11 @@ function gridLayer() {
 		g.textBaseline = "middle";
 		if (k.pct) {
 			g.font = 'bold 30px "Arial Narrow",Arial,sans-serif';
-			g.fillStyle = "#d6ecff";
+			g.fillStyle = "#12280a";
 			g.fillText(`${k.dir > 0 ? "" : "-"}${k.val.toFixed(2)}%`, x + 6, y + cellH / 2);
 		} else {
 			g.font = 'bold 26px "Arial Narrow",Arial,sans-serif';
-			g.fillStyle = k.boxed ? "#ffffff" : `rgba(200,228,255,${srnd(0.55, 0.95)})`;
+			g.fillStyle = k.boxed ? "#0f2000" : `rgba(26,54,0,${srnd(0.6, 0.95)})`;
 			g.fillText(k.val.toFixed(2), x + 10, y + cellH / 2);
 		}
 	};
@@ -346,7 +346,7 @@ function chartLayer() {
 		const bw = c.width / N;
 		candles.forEach((k, i) => {
 			const x = i * bw + bw / 2, up = k.c < k.o;
-			const col = up ? "#3dff8a" : "#ff4a55";
+			const col = up ? "#0c5c13" : "#a81020";
 			g.strokeStyle = g.fillStyle = col;
 			g.shadowColor = col;
 			g.shadowBlur = 14 * Math.min(v, 3);
@@ -373,7 +373,7 @@ function chartLayer() {
 			g.shadowBlur = 18;
 			g.stroke();
 			g.shadowBlur = 0;
-			g.strokeStyle = "rgba(255,255,255,0.7)"; // hot core
+			g.strokeStyle = "rgba(255,255,255,0.55)"; // hot core
 			g.lineWidth = 1;
 			g.stroke();
 		}
@@ -451,7 +451,7 @@ function buildSky() {
 
 	const base = new THREE.Mesh(
 		shell(424),
-		new THREE.MeshBasicMaterial({ color: 0x0b2fc9, side: THREE.BackSide, depthWrite: false, fog: false }),
+		new THREE.MeshBasicMaterial({ color: 0xc5ff00, side: THREE.BackSide, depthWrite: false, fog: false }),
 	);
 	base.renderOrder = -3;
 	group.add(base);
@@ -473,7 +473,7 @@ function buildSky() {
 	const chart = new THREE.Mesh(
 		shell(414),
 		new THREE.MeshBasicMaterial({
-			map: skyChart.tex, transparent: true, blending: THREE.AdditiveBlending,
+			map: skyChart.tex, transparent: true,
 			side: THREE.BackSide, depthWrite: false, fog: false,
 		}),
 	);
@@ -709,20 +709,20 @@ function floorTexture() {
 	const c = document.createElement('canvas');
 	c.width = c.height = size;
 	const g = c.getContext('2d');
-	g.fillStyle = '#0a1a3a';
+	g.fillStyle = '#17280a';
 	g.fillRect(0, 0, size, size);
 	// subtle slab shading
 	const grad = g.createLinearGradient(0, 0, size, size);
-	grad.addColorStop(0, 'rgba(60,110,220,0.18)');
+	grad.addColorStop(0, 'rgba(160,214,0,0.18)');
 	grad.addColorStop(0.5, 'rgba(0,0,0,0)');
-	grad.addColorStop(1, 'rgba(60,110,220,0.12)');
+	grad.addColorStop(1, 'rgba(160,214,0,0.12)');
 	g.fillStyle = grad;
 	g.fillRect(0, 0, size, size);
 	// grid seam
-	g.strokeStyle = 'rgba(90,200,255,0.55)';
+	g.strokeStyle = 'rgba(197,255,0,0.55)';
 	g.lineWidth = 3;
 	g.strokeRect(1.5, 1.5, size - 3, size - 3);
-	g.strokeStyle = 'rgba(90,200,255,0.18)';
+	g.strokeStyle = 'rgba(197,255,0,0.2)';
 	g.lineWidth = 1;
 	g.beginPath(); g.moveTo(size / 2, 0); g.lineTo(size / 2, size); g.moveTo(0, size / 2); g.lineTo(size, size / 2); g.stroke();
 	const tex = new THREE.CanvasTexture(c);
@@ -738,7 +738,7 @@ function buildFloor() {
 	const map = floorTexture();
 	return new THREE.Mesh(
 		geo,
-		new THREE.MeshBasicMaterial({ map, color: map ? 0xffffff : 0x0a1a3a }),
+		new THREE.MeshBasicMaterial({ map, color: map ? 0xffffff : 0x17280a }),
 	);
 }
 

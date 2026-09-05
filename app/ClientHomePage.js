@@ -22,16 +22,16 @@ function drawBoard(g, frame) {
 	g.textBaseline = 'middle';
 	g.font = 'bold 26px "Arial Narrow",Arial,sans-serif';
 	for (const k of BOARD.cells) {
-		g.strokeStyle = 'rgba(140,190,255,0.35)';
+		g.strokeStyle = 'rgba(30,62,0,0.32)';
 		g.lineWidth = 2;
 		g.strokeRect(k.x, k.y, cw, ch);
-		if (k.boxed) { g.fillStyle = 'rgba(40,95,235,0.7)'; g.fillRect(k.x + 1, k.y + 1, cw - 2, ch - 2); }
+		if (k.boxed) { g.fillStyle = 'rgba(160,214,0,0.85)'; g.fillRect(k.x + 1, k.y + 1, cw - 2, ch - 2); }
 		if (k.tri) {
 			const cx = k.x + cw / 2, cy = k.y + ch / 2, t = 10;
-			g.fillStyle = 'rgba(190,225,255,0.9)';
+			g.fillStyle = 'rgba(22,46,0,0.85)';
 			g.beginPath(); g.moveTo(cx - t, cy + t * k.dir * 0.6); g.lineTo(cx + t, cy + t * k.dir * 0.6); g.lineTo(cx, cy - t * k.dir * 0.6); g.fill();
 		} else {
-			g.fillStyle = k.boxed ? '#ffffff' : 'rgba(200,228,255,0.8)';
+			g.fillStyle = k.boxed ? '#0f2000' : 'rgba(26,54,0,0.75)';
 			g.fillText(k.v.toFixed(2), k.x + 10, k.y + ch / 2);
 		}
 	}
@@ -71,15 +71,36 @@ function drawLoadArrow(g, progress, frame) {
 	g.save();
 	g.lineCap = "round";
 	g.lineJoin = "round";
-	g.beginPath();
-	path.forEach(([x, y], i) => g[i ? "lineTo" : "moveTo"](x, y));
+	const trace = () => {
+		g.beginPath();
+		path.forEach(([x, y], i) => g[i ? "lineTo" : "moveTo"](x, y));
+	};
+
+	// Glow: additive halo passes, widest and faintest first. One shadowBlur alone
+	// disappears once the body swells past it, so the neon is built up instead.
+	// Skipped during the balloon, where the body already floods the screen.
+	if (progress <= 1) {
+		g.globalCompositeOperation = "lighter";
+		g.shadowColor = "#ff9a1a";
+		g.shadowBlur = 60 * pulse;
+		for (const [scale, alpha] of [[3, 0.1], [2.1, 0.16], [1.45, 0.24]]) {
+			trace();
+			g.strokeStyle = `rgba(255,150,30,${alpha * pulse})`;
+			g.lineWidth = swell * scale;
+			g.stroke();
+		}
+		g.globalCompositeOperation = "source-over";
+	}
+
+	// Solid body over the halo, then a hot white core down the middle.
+	trace();
 	g.strokeStyle = gradient;
 	g.lineWidth = swell;
 	g.shadowColor = "#ff9a1a";
-	g.shadowBlur = 70 * pulse;
-	g.stroke();
+	g.shadowBlur = Math.min(80, swell * 0.6) * pulse;
 	g.stroke();
 	g.shadowBlur = 0;
+	trace();
 	g.strokeStyle = "rgba(255,255,255,0.85)";
 	g.lineWidth = swell * 0.3;
 	g.stroke();
@@ -87,15 +108,28 @@ function drawLoadArrow(g, progress, frame) {
 	const size = swell * 3.2;
 	g.translate(tip[0], tip[1]);
 	g.rotate(Math.atan2(direction[1], direction[0]));
-	g.beginPath();
-	g.moveTo(size, 0);
-	g.lineTo(-size * 0.7, -size * 0.8);
-	g.lineTo(-size * 0.25, 0);
-	g.lineTo(-size * 0.7, size * 0.8);
-	g.closePath();
+	const head = () => {
+		g.beginPath();
+		g.moveTo(size, 0);
+		g.lineTo(-size * 0.7, -size * 0.8);
+		g.lineTo(-size * 0.25, 0);
+		g.lineTo(-size * 0.7, size * 0.8);
+		g.closePath();
+	};
+	if (progress <= 1) {
+		g.globalCompositeOperation = "lighter";
+		g.shadowColor = "#ffb028";
+		g.shadowBlur = 90 * pulse;
+		g.fillStyle = `rgba(255,170,40,${0.3 * pulse})`;
+		head();
+		g.fill();
+		g.fill();
+		g.globalCompositeOperation = "source-over";
+	}
+	head();
 	g.fillStyle = "#ffd23a";
 	g.shadowColor = "#ff9a1a";
-	g.shadowBlur = 90 * pulse;
+	g.shadowBlur = Math.min(100, size * 0.4) * pulse;
 	g.fill();
 	g.restore();
 }
