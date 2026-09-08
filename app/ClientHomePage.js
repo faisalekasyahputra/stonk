@@ -330,7 +330,7 @@ export default function ClientHomePage({
 			{loadScene ? (
 				<Script
 					id="legacy-main"
-					src="/js/main.js?v=20241225-01"
+					src="/js/main.js?v=20260909-classic"
 					type="module"
 					strategy="afterInteractive"
 				/>

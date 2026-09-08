@@ -231,8 +231,8 @@ const RIG_K = 1.1 / 1.7;
 // Every Meshy export in this set carries the same skinned character plus one
 // clip, so the first file is the model and the rest only donate their animation.
 const ANIM_FILES = [
-	"walking.glb",
-	"running.glb",
+	"classic/walking.glb",
+	"classic/running.glb",
 	"alert.glb",
 	"alert_quick_turn_right.glb",
 	"angry_to_tantrum_sit.glb",
@@ -249,7 +249,7 @@ const SPEEDS = { walking: 1.3, running: 3.6 }; // units/s, eyeballed to the stri
 
 // Meshy renames its clips between exports ("Armature|walking_man|baselayer"),
 // so clips are keyed by the filename we chose instead.
-const clipNameFor = (file) => file.replace(/\.glb$/i, "");
+const clipNameFor = (file) => file.split("/").pop().replace(/\.glb$/i, "");
 let heading = Math.PI; // current facing (starts toward the camera)
 let targetHeading = Math.PI;
 
