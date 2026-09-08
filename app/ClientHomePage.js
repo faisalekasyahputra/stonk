@@ -22,16 +22,16 @@ function drawBoard(g, frame) {
 	g.textBaseline = 'middle';
 	g.font = 'bold 26px "Arial Narrow",Arial,sans-serif';
 	for (const k of BOARD.cells) {
-		g.strokeStyle = 'rgba(30,62,0,0.32)';
+		g.strokeStyle = 'rgba(100,190,235,0.55)';
 		g.lineWidth = 2;
 		g.strokeRect(k.x, k.y, cw, ch);
-		if (k.boxed) { g.fillStyle = 'rgba(160,214,0,0.85)'; g.fillRect(k.x + 1, k.y + 1, cw - 2, ch - 2); }
+		if (k.boxed) { g.fillStyle = 'rgba(40,85,190,0.65)'; g.fillRect(k.x + 1, k.y + 1, cw - 2, ch - 2); }
 		if (k.tri) {
 			const cx = k.x + cw / 2, cy = k.y + ch / 2, t = 10;
-			g.fillStyle = 'rgba(22,46,0,0.85)';
+			g.fillStyle = 'rgba(150,210,235,0.9)';
 			g.beginPath(); g.moveTo(cx - t, cy + t * k.dir * 0.6); g.lineTo(cx + t, cy + t * k.dir * 0.6); g.lineTo(cx, cy - t * k.dir * 0.6); g.fill();
 		} else {
-			g.fillStyle = k.boxed ? '#0f2000' : 'rgba(26,54,0,0.75)';
+			g.fillStyle = k.boxed ? '#b4ddf0' : 'rgba(150,210,235,0.85)';
 			g.fillText(k.v.toFixed(2), k.x + 10, k.y + ch / 2);
 		}
 	}
@@ -231,7 +231,7 @@ export default function ClientHomePage({
 				const caText = caBox?.textContent?.trim() || "";
 				const ca = caText.toLowerCase() === "coming soon" ? "" : caText;
 
-				// Buy always goes to the Pons launchpad; the icon is only useful
+				// Buy always goes to Pump.fun; the icon is only useful
 				// once there is an address to send people to.
 				const buyIcon = document.getElementById("buy-icon");
 				if (buyIcon) buyIcon.style.display = ca ? "" : "none";

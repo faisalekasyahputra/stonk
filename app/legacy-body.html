@@ -19,8 +19,8 @@
         <i class="fas fa-chart-line" style="color: #fff;"></i>
         <span>Chart</span>
     </div>
-    <div class="desktop-icon" id="buy-icon" onclick="window.open('https://www.ponsfamily.com/launchpad/' + document.getElementById('ca-box-address').textContent, '_blank')">
-        <img src="assets/pons.png" style="width: 32px; height: 32px;">
+    <div class="desktop-icon" id="buy-icon" onclick="const ca = window.readContractAddress?.(); window.open(ca ? 'https://pump.fun/coin/' + encodeURIComponent(ca) : 'https://pump.fun', '_blank', 'noopener,noreferrer')">
+        <img src="assets/pump.webp" alt="Pump.fun" style="width: 32px; height: 32px;">
         <span>Buy $STONK</span>
     </div>
 </div>
@@ -61,8 +61,8 @@
         <a href="https://x.com/i/communities/2001377939708088348" id="community-link" target="_blank" class="start-link">
             <i class="fas fa-users" style="color: #4b2c20;"></i> Community
         </a>
-        <a href="#" target="_blank" class="start-link" onclick="this.href='https://www.ponsfamily.com/launchpad/' + document.getElementById('ca-box-address').textContent">
-            <img src="assets/pons.png" style="width: 16px; height: 16px;"> Buy on Pons
+        <a href="https://pump.fun" target="_blank" rel="noopener noreferrer" class="start-link" onclick="const ca = window.readContractAddress?.(); this.href = ca ? 'https://pump.fun/coin/' + encodeURIComponent(ca) : 'https://pump.fun'">
+            <img src="assets/pump.webp" alt="Pump.fun" style="width: 16px; height: 16px;"> Buy on Pump.fun
         </a>
         <div style="border-top: 1px solid #ddd; margin: 5px 0;"></div>
         <a href="#" class="start-link" id="start-about">
