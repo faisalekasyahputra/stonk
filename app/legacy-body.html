@@ -11,9 +11,9 @@
         <i class="fas fa-users" style="color: #fff;"></i>
         <span>Community</span>
     </div>
-    <div class="desktop-icon" onclick="toggleWindow('twitter-panel')">
-        <i class="fas fa-robot" style="color: #fff;"></i>
-        <span>Post Twitter</span>
+    <div class="desktop-icon" id="otc-icon" onclick="const ca = window.readContractAddress?.(); window.open(ca ? 'https://otcdesks.cash/coin/' + encodeURIComponent(ca) : 'https://otcdesks.cash', '_blank', 'noopener,noreferrer')">
+        <img src="assets/otcdesks.webp" alt="OTC Desks" style="width: 32px; height: 32px;">
+        <span>OTC Desks</span>
     </div>
     <div class="desktop-icon" id="chart-icon" style="display:none;">
         <i class="fas fa-chart-line" style="color: #fff;"></i>
