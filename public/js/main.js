@@ -7,11 +7,11 @@ import {
 	updateArbre,
 	updateGlansShape,
 	forceUpdateMaterials,
-} from "./dynamicPart.js?v=20260830-skin2";
-import { createGUI, addModelControls } from "./ui.js?v=20260830-skin2";
+} from "./dynamicPart.js?v=20260909-matte";
+import { createGUI, addModelControls } from "./ui.js?v=20260909-matte";
 import { MatrixRain } from "./matrixRain.js?v=20260830-skin2";
 import { createWorld, updateWorld, heightAt } from "./world.js?v=20260830-skin2";
-import { startDataUpdates, TOKEN_ADDRESS } from "./data.js?v=20260830-skin2";
+import { startDataUpdates, TOKEN_ADDRESS } from "./data.js?v=20260909-refresh5";
 
 // --- Windows XP UI Logic ---
 function updateClock() {
@@ -317,8 +317,8 @@ loader.load(
 				}
 				child.material = new THREE.MeshStandardMaterial({
 					map: map || null,
-					roughness: 0.6,
-					metalness: 0.05,
+					roughness: 0.85,
+					metalness: 0,
 					skinning: true, // three r128 needs this flag on skinned meshes
 				});
 			}

@@ -5,10 +5,8 @@ export let TOKEN_ADDRESS =
 // has already been evaluated.
 let CHAIN_ID = runtimeConfig.chainId || "solana";
 
-// How often the market is polled. DexScreener allows 300 requests per minute
-// per IP on these endpoints and this runs per visitor, so 2s (30/min) keeps a
-// wide margin even when a cycle fires the fallback search as well.
-export const POLL_MS = 2000;
+// Refresh market data and size displays every five seconds.
+export const POLL_MS = 5000;
 
 let lastUpdate = null;
 let nextUpdateTime = null;
@@ -401,7 +399,7 @@ async function updateMarketCap(updateArbreCallback) {
 	console.log(`[DEBUG] Step 5: Fetching pair data from API: ${apiUrl}`);
 
 	try {
-		const response = await fetch(apiUrl);
+		const response = await fetch(apiUrl, { cache: "no-store" });
 		if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
 
 		const apiData = await response.json();
@@ -465,16 +463,12 @@ function updateSizeFromMarketCap(valueForScaling, updateArbreCallback) {
 	const newScale = calculateScaleFromMarketCap(valueForScaling);
 	const previousScale = currentScale;
 
-	// Prevent unnecessary DOM updates if scale hasn't changed significantly
-	if (Math.abs(newScale - previousScale) < 0.001) {
-		return;
-	}
-
-	currentScale = newScale;
-
-	// 1. Update 3D Model Immediately
-	if (updateArbreCallback) {
-		updateArbreCallback(currentScale);
+	// Only rebuild geometry when needed; always restore displays after UI rerenders.
+	if (Math.abs(newScale - previousScale) >= 0.001) {
+		currentScale = newScale;
+		if (updateArbreCallback) {
+			updateArbreCallback(currentScale);
+		}
 	}
 
 	// 2. Update Size Displays (cm/inch)

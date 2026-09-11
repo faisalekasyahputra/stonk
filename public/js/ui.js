@@ -35,8 +35,7 @@ function createGUI(params) {
 	lightFolder.addColor(ambientLight, "color").name("Ambient Color");
 	lightFolder
 		.add(ambientLight, "intensity", 0, 2)
-		.name("Ambient Intensity")
-		.setValue(0);
+		.name("Ambient Intensity");
 	const dirLightFolder = lightFolder.addFolder("Directional Light");
 	dirLightFolder.addColor(directionalLight, "color").name("Color");
 	dirLightFolder.add(directionalLight.position, "x", -20, 20).name("Pos X");
@@ -44,8 +43,7 @@ function createGUI(params) {
 	dirLightFolder.add(directionalLight.position, "z", -20, 20).name("Pos Z");
 	dirLightFolder
 		.add(directionalLight, "intensity", 0, 4)
-		.name("Intensity")
-		.setValue(2.07);
+		.name("Intensity");
 
 	const lightCopyObj = {
 		copyLighting: () => {
@@ -133,7 +131,7 @@ function createGUI(params) {
 		thetaLength: 3.142,
 		noiseAmplitude: 0.056,
 		color: 0xbda184, // glans matches Jemo's face skin exactly
-		roughness: 0.18,
+		roughness: 0.8,
 		metalness: 0,
 		bulletShape: true,
 		baseRadius: 0.29,

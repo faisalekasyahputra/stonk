@@ -1,12 +1,16 @@
 import * as THREE from "three";
 
 // --- Materials for Dynamic Part ---
-const skinMaterial = new THREE.MeshBasicMaterial({
+const skinMaterial = new THREE.MeshStandardMaterial({
 	color: 0xbda184, // the stonk head skin, sampled from the model texture
+	roughness: 0.85,
+	metalness: 0,
 	side: THREE.DoubleSide,
 });
-const glansMaterial = new THREE.MeshBasicMaterial({
+const glansMaterial = new THREE.MeshStandardMaterial({
 	color: 0xbda184, // exactly the stonk head skin, tip included
+	roughness: 0.8,
+	metalness: 0,
 });
 
 // --- Dynamic Genital Part Setup ---
@@ -253,10 +257,10 @@ function updateArbre(scale, glansControls = null) {
 	if (glans) genital.remove(glans);
 
 	// Create material with customizable properties
-	const glansMaterialCustom = new THREE.MeshBasicMaterial({
+	const glansMaterialCustom = new THREE.MeshStandardMaterial({
 		color: glansControls ? glansControls.color : 0xbda184,
-		roughness: glansControls ? glansControls.roughness : 0.3,
-		metalness: glansControls ? glansControls.metalness : 0.05,
+		roughness: glansControls ? glansControls.roughness : 0.8,
+		metalness: glansControls ? glansControls.metalness : 0,
 	});
 
 	glans = new THREE.Mesh(glansGeometry, glansMaterialCustom);
