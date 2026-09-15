@@ -1,7 +1,7 @@
 import * as THREE from "three";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import { DRACOLoader } from "three/addons/loaders/DRACOLoader.js";
-import { setupScene, checkLayers } from "./scene.js?v=20260830-skin2";
+import { setupScene, checkLayers } from "./scene.js?v=20260915-soft";
 import {
 	genital,
 	updateArbre,

@@ -28,9 +28,9 @@ function setupScene() {
 	camera.position.set(0, 2, 7); // Set initial position
 
 	renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-	// Render at device resolution (capped at 1.5x to stay light) so edges and
+	// Render at device resolution (capped at 2x to stay light) so edges and
 	// the 2k character texture stop looking jagged on HiDPI screens.
-	renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5));
+	renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
 
 	renderer.setSize(window.innerWidth, window.innerHeight);
 	renderer.shadowMap.enabled = false; // Disable shadows
@@ -61,25 +61,25 @@ function setupScene() {
 	// the genital (layer 2), mask 6 = both. Everything rides the camera so the
 	// key always models the face from front-right no matter where the orbit is.
 	// Sky/ground bounce instead of flat ambient: cool from above, warm from grass.
-	ambientLight = new THREE.HemisphereLight(0x9fc3ff, 0x4a3a20, 0.22);
+	ambientLight = new THREE.HemisphereLight(0x9fc3ff, 0x4a3a20, 0.3);
 	ambientLight.layers.mask = 6;
 	scene.add(ambientLight);
 
 	// Key: warm, high, front-right. Intensity is the main exposure knob.
-	directionalLight = new THREE.DirectionalLight(0xfff0d8, 0.55);
+	directionalLight = new THREE.DirectionalLight(0xfff0d8, 0.45);
 	directionalLight.position.set(6, 9, 3);
 	directionalLight.castShadow = false;
 	directionalLight.layers.mask = 6;
 	camera.add(directionalLight);
 
 	// Fill: cool, low, front-left, keeps shadows from going black.
-	const fillLight = new THREE.DirectionalLight(0x7fa8ff, 0.18);
+	const fillLight = new THREE.DirectionalLight(0x7fa8ff, 0.24);
 	fillLight.position.set(-6, 3, 4);
 	fillLight.layers.mask = 6;
 	camera.add(fillLight);
 
 	// Rim: warm backlight that outlines the silhouette against the sky.
-	const rimLight = new THREE.DirectionalLight(0xffc38a, 0.5);
+	const rimLight = new THREE.DirectionalLight(0xffc38a, 0.35);
 	rimLight.position.set(0, 5, -8);
 	rimLight.layers.mask = 6;
 	camera.add(rimLight);
