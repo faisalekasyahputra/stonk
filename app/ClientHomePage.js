@@ -231,11 +231,6 @@ export default function ClientHomePage({
 				const caText = caBox?.textContent?.trim() || "";
 				const ca = caText.toLowerCase() === "coming soon" ? "" : caText;
 
-				// Buy always goes to Pump.fun; the icon is only useful
-				// once there is an address to send people to.
-				const buyIcon = document.getElementById("buy-icon");
-				if (buyIcon) buyIcon.style.display = ca ? "" : "none";
-
 				// The chart link is whatever Supabase says (Robinhood, a DEX, anything).
 				// A {CA} placeholder in that URL is filled in with the contract address,
 				// so the same row keeps working when the token changes.
