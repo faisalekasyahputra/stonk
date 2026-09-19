@@ -9,6 +9,10 @@ assert.match(
 	/https:\/\/www\.stonkfun\.xyz\/token\/['"]?\s*\+\s*encodeURIComponent\(ca\)/,
 );
 assert.match(html, /const ca = window\.readContractAddress\?\.\(\)/);
+assert.match(
+	html,
+	/<img src="https:\/\/www\.stonkfun\.xyz\/stonk-mark\.svg" alt="StonkFun"[^>]*>/,
+);
 assert.match(html, /id="otc-icon"[^>]*style="display:\s*none;?"/);
 
 console.log("PASS: StonkFun uses the live CA and OTC is hidden");
