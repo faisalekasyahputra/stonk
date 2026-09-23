@@ -2,49 +2,54 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const vm = require('node:vm');
 
-// Exercise the actual polling pipeline with browser/network boundaries stubbed.
-const size = { innerHTML: '-- cm', classList: { remove() {}, add() {} } };
-const intervals = [];
-const scales = [];
-let fdv = 100000;
+const nodes = new Map();
+const node = id => {
+  if (!nodes.has(id)) nodes.set(id, { textContent: '', innerHTML: '', style: {}, classList: { add() {}, remove() {} }, setAttribute() {}, querySelector: () => null });
+  return nodes.get(id);
+};
+let listener;
+const requests = [];
 const context = vm.createContext({
+  AbortController, AbortSignal,
   window: {
-    __APP_CONFIG__: { tokenAddress: 'test-token', pairAddress: 'test-pair' },
-    addEventListener() {},
+    __APP_CONFIG__: { tokenAddress: 'old' },
+    addEventListener: (_, fn) => { listener = fn; },
   },
   document: {
-    getElementById: (id) => id === 'penis-size' ? size : null,
+    getElementById: node,
     querySelector: () => null,
   },
-  console: { log() {}, warn() {}, error: (...args) => { throw Error(args.join(' ')); } },
-  setInterval: (fn, ms) => intervals.push({ fn, ms }),
-  fetch: async () => ({ ok: true, json: async () => ({ pair: {
-    baseToken: { name: 'Test' }, volume: { h24: 1 },
-    priceChange: { h24: 0 }, priceUsd: '0.001', fdv,
-  } }) }),
+  console: { log() {}, warn() {}, error() {} },
+  setInterval() {},
+  fetch: () => new Promise(resolve => requests.push(resolve)),
 });
 const source = fs.readFileSync(require.resolve('../public/js/data.js'), 'utf8')
   .replace(/^export \{[^}]+\};?$/gm, '').replace(/^export /gm, '');
 vm.runInContext(source, context);
+const tick = () => new Promise(resolve => setImmediate(resolve));
+const payload = address => ({ address, status: 'ready', name: 'Token', priceUsd: 1, marketCapUsd: null, fdvUsd: 1000,
+  volume24hUsd: 0, change24hPercent: 0, checkedAt: new Date().toISOString(), fieldSources: { fdvUsd: 'LaunchLab on-chain' } });
 
 (async () => {
-  context.startDataUpdates((scale) => scales.push(scale));
-  await new Promise(setImmediate);
-  assert.equal(size.innerHTML, '99.9 cm (39.3 inch)');
-
-  // A React/preloader rerender wipes the display while the market stays unchanged.
-  size.innerHTML = '-- cm';
-  await intervals[0].fn();
-  assert.equal(size.innerHTML, '99.9 cm (39.3 inch)', 'each poll must restore the size display');
-  assert.equal(scales.length, 1, 'unchanged data must not rebuild geometry');
-  assert.equal(intervals[0].ms, 5000, 'market polls must run every five seconds');
-
-  fdv = 400000;
-  await intervals[0].fn();
-  assert.equal(size.innerHTML, '199.9 cm (78.7 inch)');
-  assert.equal(scales.length, 2, 'changed market data must update the model');
-  fdv = 0;
-  await intervals[0].fn();
-  assert.equal(size.innerHTML, '10.0 cm (3.9 inch)');
-  console.log('PASS: five-second polling, unchanged display refresh, growth and reset');
+  context.startDataUpdates(() => {});
+  listener({ detail: { address: '' } });
+  requests[0]({ ok: true, json: async () => payload('old') });
+  await tick();
+  assert.equal(node('taskbar-ca').textContent, 'CA: Coming soon');
+  assert.equal(node('market-cap-only-value').textContent, '--');
+  requests[1]({ ok: true, json: async () => ({ address: '', status: 'coming-soon' }) });
+  await tick();
+  listener({ detail: { address: 'new' } });
+  requests[2]({ ok: true, json: async () => payload('new') });
+  await tick();
+  assert.equal(node('valuation-label').textContent, 'FDV');
+  assert.equal(node('token-volume').textContent, '$0');
+  assert.equal(node('token-change').textContent, '0.00%');
+  assert.equal(node('stats-source').textContent, 'LaunchLab on-chain');
+  const request = vm.runInContext('updateMarketCap(() => {})', context);
+  requests[3]({ ok: false });
+  await request;
+  assert.equal(node('market-cap-only-value').textContent, '--');
+  assert.equal(node('connection-label').textContent, 'Statistics temporarily unavailable');
+  console.log('PASS: stale responses, FDV, zero values, and outages');
 })().catch((error) => { console.error(error); process.exitCode = 1; });

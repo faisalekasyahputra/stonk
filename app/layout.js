@@ -1,6 +1,7 @@
 import "./globals.css";
+import { headers } from "next/headers";
 
-export const metadata = {
+const metadata = {
 	metadataBase: new URL(
 		process.env.NEXT_PUBLIC_SITE_URL ||
 			(process.env.VERCEL_PROJECT_PRODUCTION_URL
@@ -11,17 +12,17 @@ export const metadata = {
 	),
 	title: "STONK",
 	description:
-		"Meet STONK whose penis size changes based on token market cap! Watch it grow and shrink in real-time.",
+		"A STONK now paired with $STONK",
 	openGraph: {
 		title: "STONK",
 		description:
-			"Meet STONK whose penis size changes based on token market cap! Watch it grow and shrink in real-time.",
+			"A STONK now paired with $STONK",
 		images: [
 			{
-				url: "/assets/og-stonk-market.jpg",
-				width: 1200,
-				height: 630,
-				alt: "STONK holding a stack of cash in an art gallery",
+				url: "/assets/og-stonk-rooftop.png",
+				width: 1500,
+				height: 500,
+				alt: "STONK sitting on a rooftop overlooking the city at sunset",
 			},
 		],
 		type: "website",
@@ -30,10 +31,21 @@ export const metadata = {
 		card: "summary_large_image",
 		title: "STONK",
 		description:
-			"Meet STONK whose penis size changes based on token market cap! Watch it grow and shrink in real-time.",
-		images: ["/assets/og-stonk-market.jpg"],
+			"A STONK now paired with $STONK",
+		images: ["/assets/og-stonk-rooftop.png"],
 	},
 };
+
+export async function generateMetadata() {
+	const requestHeaders = await headers();
+	const host = requestHeaders.get("host");
+	const protocol = requestHeaders.get("x-forwarded-proto") === "http" ? "http" : "https";
+	let metadataBase = metadata.metadataBase;
+	if (host && /^[a-z0-9.-]+(?::\d+)?$/i.test(host)) {
+		metadataBase = new URL(`${protocol}://${host}`);
+	}
+	return { ...metadata, metadataBase };
+}
 
 export default function RootLayout({ children }) {
 	return (
