@@ -8,6 +8,8 @@ let updateCallback = null;
 let nextUpdateTime = null;
 let activeRequest = null;
 let revision = 0;
+let configuredAddress = null;
+let configuredUpdatedAt = null;
 
 function text(id, value) {
 	const element = document.getElementById(id);
@@ -50,6 +52,8 @@ function clearStats() {
 window.addEventListener("tokenAddressUpdated", (event) => {
 	if (!event.detail || !("address" in event.detail)) return;
 	const address = (event.detail.address || "").trim();
+	configuredAddress = address;
+	configuredUpdatedAt = event.detail.updatedAt || null;
 	if (address === TOKEN_ADDRESS) return;
 	TOKEN_ADDRESS = address;
 	revision++;
@@ -126,11 +130,20 @@ async function updateMarketCap(callback) {
 		const data = await response.json();
 		if (version !== revision) return;
 		if (typeof data.address !== "string") throw new Error("Invalid statistics response");
+		if (configuredUpdatedAt && (
+			!data.configUpdatedAt ||
+			data.configUpdatedAt < configuredUpdatedAt ||
+			(data.configUpdatedAt === configuredUpdatedAt && data.address !== configuredAddress)
+		)) return;
 		if (data.address !== TOKEN_ADDRESS) {
 			TOKEN_ADDRESS = data.address;
 			window.__APP_CONFIG__ = { ...window.__APP_CONFIG__, tokenAddress: TOKEN_ADDRESS };
 			clearStats();
 			showAddress();
+		}
+		if (data.configUpdatedAt) {
+			configuredAddress = data.address;
+			configuredUpdatedAt = data.configUpdatedAt;
 		}
 		if (data.status === "ready") updateDisplayWithData(data, callback);
 		else {

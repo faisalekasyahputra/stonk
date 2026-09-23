@@ -17,6 +17,7 @@ export interface ProjectConfig {
 	title: string;
 	description: string;
 	connection_status: string;
+	updated_at: string;
 }
 
 export function useProjectConfig() {
@@ -49,7 +50,7 @@ export function useProjectConfig() {
 				if (latestData && latestData.contract_address && window !== undefined) {
 					window.dispatchEvent(
 						new CustomEvent("tokenAddressUpdated", {
-							detail: { address: latestData.contract_address },
+							detail: { address: latestData.contract_address, updatedAt: latestData.updated_at },
 						}),
 					);
 				}

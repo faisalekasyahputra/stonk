@@ -19,7 +19,7 @@
         <img src="/assets/dexscreener.svg?v=solid" alt="Dexscreener" width="32" height="32">
         <span>Chart</span>
     </div>
-    <div class="desktop-icon" id="buy-icon" onclick="const ca = window.readContractAddress?.(); window.open(ca ? 'https://pump.fun/coin/' + encodeURIComponent(ca) : 'https://pump.fun', '_blank', 'noopener,noreferrer')">
+    <div class="desktop-icon" id="buy-icon" style="display:none;" onclick="const ca = window.readContractAddress?.(); window.open(ca ? 'https://pump.fun/coin/' + encodeURIComponent(ca) : 'https://pump.fun', '_blank', 'noopener,noreferrer')">
         <img src="assets/pump.webp" alt="Pump" style="width: 32px; height: 32px;">
         <span>Pump</span>
     </div>
@@ -65,7 +65,7 @@
         <a href="https://x.com/i/communities/2001377939708088348" id="community-link" target="_blank" class="start-link">
             <i class="fas fa-users" style="color: #4b2c20;"></i> Community
         </a>
-        <a href="https://pump.fun" target="_blank" rel="noopener noreferrer" class="start-link" onclick="const ca = window.readContractAddress?.(); this.href = ca ? 'https://pump.fun/coin/' + encodeURIComponent(ca) : 'https://pump.fun'">
+        <a href="https://pump.fun" target="_blank" rel="noopener noreferrer" class="start-link" style="display:none;" onclick="const ca = window.readContractAddress?.(); this.href = ca ? 'https://pump.fun/coin/' + encodeURIComponent(ca) : 'https://pump.fun'">
             <img src="assets/pump.webp" alt="Pump" style="width: 16px; height: 16px;"> Buy on Pump
         </a>
         <div style="border-top: 1px solid #ddd; margin: 5px 0;"></div>

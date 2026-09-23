@@ -7,6 +7,7 @@ import {
 	decodeCurve,
 	decodeLaunchlab,
 	loadStats,
+	pump,
 	validMint,
 } from "../lib/token-stats.mjs";
 
@@ -75,5 +76,41 @@ launch.writeBigUInt64LE(20n, 61);
 assert.equal(decodeLaunchlab(launch, mint, quoteMint).tokenReserve, 90n);
 assert.equal(decodeLaunchlab(launch, mint, quoteMint).quoteReserve, 220n);
 assert.equal(decodeLaunchlab(launch, quoteMint, mint), null);
+
+const originalFetch = globalThis.fetch;
+const pumpCurve = Buffer.alloc(115);
+Buffer.from([23, 183, 248, 55, 96, 216, 172, 96]).copy(pumpCurve);
+Buffer.from(getAddressEncoder().encode(quoteMint)).copy(pumpCurve, 83);
+pumpCurve.writeBigUInt64LE(2000000n, 8);
+pumpCurve.writeBigUInt64LE(3000000000n, 16);
+function mintAccount(decimals, supply) {
+	const bytes = Buffer.alloc(82);
+	bytes[44] = decimals;
+	bytes[45] = 1;
+	bytes.writeBigUInt64LE(supply, 36);
+	return { owner: "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA", data: [bytes.toString("base64"), "base64"] };
+}
+let wrongOwner = false;
+globalThis.fetch = async (url, options) => {
+	let body;
+	if (options.method === "POST") {
+		const request = JSON.parse(options.body);
+		body = { result: { value: request.params[0].length === 2
+			? [{ owner: wrongOwner ? mint : "6EF8rrecthR5Dkzon8Nwu78hRvfCKubJ14M5uBEwF6P", data: [pumpCurve.toString("base64"), "base64"] }, mintAccount(6, 1000000000n)]
+			: [mintAccount(9, 1000000000000n)] } };
+	} else if (url.includes("dexscreener")) {
+		body = { pairs: [{ ...pair, baseToken: { address: quoteMint }, priceUsd: "4" }] };
+	} else body = {};
+	return { ok: true, json: async () => body };
+};
+try {
+	const result = await pump(mint);
+	assert.equal(result.priceUsd, 6);
+	assert.equal(result.fdvUsd, 6000);
+	wrongOwner = true;
+	assert.equal(await pump(mint), null);
+} finally {
+	globalThis.fetch = originalFetch;
+}
 
 console.log("PASS: provider identity, fallback, zero values, and curve validation");

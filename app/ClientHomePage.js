@@ -201,7 +201,7 @@ export default function ClientHomePage({
 			// Dispatch event for data.js to pick up
 			window.dispatchEvent(
 				new CustomEvent("tokenAddressUpdated", {
-					detail: { address: config.contract_address, chainId },
+					detail: { address: config.contract_address, chainId, updatedAt: config.updated_at },
 				}),
 			);
 

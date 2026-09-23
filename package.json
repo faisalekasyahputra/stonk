@@ -5,7 +5,8 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start"
+    "start": "next start",
+    "test": "node tests/token-stats.mjs && node tests/data-refresh.cjs && node tests/buy-link.cjs && node tests/opengraph-image.cjs"
   },
   "dependencies": {
     "@solana/addresses": "8.3.0",

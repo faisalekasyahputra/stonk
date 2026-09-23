@@ -9,8 +9,10 @@ const node = id => {
 };
 let listener;
 const requests = [];
+let now = 0;
+class FakeDate extends Date { static now() { return now; } }
 const context = vm.createContext({
-  AbortController, AbortSignal,
+  AbortController, AbortSignal, Date: FakeDate,
   window: {
     __APP_CONFIG__: { tokenAddress: 'old' },
     addEventListener: (_, fn) => { listener = fn; },
@@ -27,21 +29,26 @@ const source = fs.readFileSync(require.resolve('../public/js/data.js'), 'utf8')
   .replace(/^export \{[^}]+\};?$/gm, '').replace(/^export /gm, '');
 vm.runInContext(source, context);
 const tick = () => new Promise(resolve => setImmediate(resolve));
-const payload = address => ({ address, status: 'ready', name: 'Token', priceUsd: 1, marketCapUsd: null, fdvUsd: 1000,
+const payload = (address, configUpdatedAt) => ({ address, configUpdatedAt, status: 'ready', name: 'Token', priceUsd: 1, marketCapUsd: null, fdvUsd: 1000,
   volume24hUsd: 0, change24hPercent: 0, checkedAt: new Date().toISOString(), fieldSources: { fdvUsd: 'LaunchLab on-chain' } });
 
 (async () => {
   context.startDataUpdates(() => {});
-  listener({ detail: { address: '' } });
-  requests[0]({ ok: true, json: async () => payload('old') });
+  listener({ detail: { address: '', updatedAt: '2026-09-23T00:00:02Z' } });
+  requests[0]({ ok: true, json: async () => payload('old', '2026-09-23T00:00:01Z') });
   await tick();
   assert.equal(node('taskbar-ca').textContent, 'CA: Coming soon');
   assert.equal(node('market-cap-only-value').textContent, '--');
-  requests[1]({ ok: true, json: async () => ({ address: '', status: 'coming-soon' }) });
+  now = 25000;
+  requests[1]({ ok: true, json: async () => payload('old', '2026-09-23T00:00:01Z') });
   await tick();
-  listener({ detail: { address: 'new' } });
-  requests[2]({ ok: true, json: async () => payload('new') });
+  assert.equal(node('taskbar-ca').textContent, 'CA: Coming soon', 'cached old CA must not replace a cleared Supabase CA');
+  assert.equal(node('market-cap-only-value').textContent, '--');
+  const refreshed = vm.runInContext('updateMarketCap(() => {})', context);
+  requests[2]({ ok: true, json: async () => payload('new', '2026-09-23T00:00:03Z') });
+  await refreshed;
   await tick();
+  assert.equal(node('taskbar-ca').textContent, 'CA: new...new', 'server CA must become authoritative after the cache window');
   assert.equal(node('valuation-label').textContent, 'FDV');
   assert.equal(node('token-volume').textContent, '$0');
   assert.equal(node('token-change').textContent, '0.00%');

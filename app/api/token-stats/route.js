@@ -11,24 +11,28 @@ let pending;
 
 async function readStats() {
 	let address = (process.env.NEXT_PUBLIC_TOKEN_ADDRESS || "").trim();
+	let configUpdatedAt = null;
 	const { NEXT_PUBLIC_SUPABASE_URL: url, NEXT_PUBLIC_SUPABASE_ANON_KEY: key, NEXT_PUBLIC_PROJECT_SLUG: slug } = process.env;
 	if (url && key && slug) {
 		const db = createClient(url, key, { auth: { persistSession: false, autoRefreshToken: false } });
 		const { data, error } = await db.from("project_configs")
-			.select("contract_address, melly_projects!inner(slug)")
+			.select("contract_address, updated_at, melly_projects!inner(slug)")
 			.eq("melly_projects.slug", slug)
 			.order("updated_at", { ascending: false })
 			.limit(1)
 			.abortSignal(AbortSignal.timeout(3500));
 		if (error) throw new Error("Project config unavailable");
-		if (data?.length) address = (data[0].contract_address || "").trim();
+		if (data?.length) {
+			address = (data[0].contract_address || "").trim();
+			configUpdatedAt = data[0].updated_at;
+		}
 	}
-	if (!address) return mergeStats("", []);
-	if (!validMint(address)) return { ...mergeStats(address, []), status: "invalid-address" };
+	if (!address) return { ...mergeStats("", []), configUpdatedAt };
+	if (!validMint(address)) return { ...mergeStats(address, []), configUpdatedAt, status: "invalid-address" };
 	if ((process.env.NEXT_PUBLIC_CHAIN_ID || "solana") !== "solana") {
-		return { ...mergeStats(address, []), status: "unsupported-chain" };
+		return { ...mergeStats(address, []), configUpdatedAt, status: "unsupported-chain" };
 	}
-	return loadStats(address);
+	return { ...await loadStats(address), configUpdatedAt };
 }
 
 export async function GET() {
