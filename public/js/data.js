@@ -109,7 +109,7 @@ function updateDisplayWithData(data, callback) {
 		text("penis-change", "--");
 		text("taskbar-size", "Size: -- cm");
 	}
-	const sources = [...new Set(Object.values(data.fieldSources || {}))].join(" / ");
+	const sources = [...new Set(Object.values(data.fieldSources || {}).filter((source) => source !== "Helius"))].join(" / ");
 	text("stats-source", sources || "--");
 	text("update-time", new Date(data.checkedAt).toLocaleTimeString());
 	status("Live", true);
