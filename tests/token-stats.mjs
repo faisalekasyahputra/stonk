@@ -74,6 +74,23 @@ assert.equal(stats.marketCapUsd, 42);
 assert.equal(birdCalls, 1);
 assert.equal(stats.volume24hUsd, 0);
 
+const liveProviders = {
+	stonk: async () => ({ source: "Stonkfun", priceUsd: 0.000015, marketCapUsd: 15000, fdvUsd: 15000, volume24hUsd: 100 }),
+	dex: async () => null,
+	birdeye: async () => null,
+	launchlab: async () => ({ source: "LaunchLab on-chain", priceUsd: 0.000007, fdvUsd: 7000 }),
+	pump: async () => null,
+	helius: async () => null,
+};
+const liveStats = await loadStats(mint, liveProviders);
+assert.equal(liveStats.priceUsd, 0.000007, "live pool price must override delayed API price");
+assert.equal(liveStats.fdvUsd, 7000);
+assert.equal(liveStats.marketCapUsd, null, "old MC must not hide the live FDV in the UI");
+assert.equal(liveStats.volume24hUsd, 100);
+const fallbackStats = await loadStats(mint, { ...liveProviders, launchlab: async () => { throw new Error("RPC timeout"); } });
+assert.equal(fallbackStats.marketCapUsd, 15000);
+assert.equal(fallbackStats.priceUsd, 0.000015);
+
 const quoteMint = "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v";
 const launch = Buffer.alloc(429);
 Buffer.from([247, 237, 227, 245, 215, 195, 222, 70]).copy(launch);
