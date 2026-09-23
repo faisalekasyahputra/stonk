@@ -3,6 +3,7 @@ import {
 	normalizeDex,
 	normalizeStonk,
 	normalizeBirdeye,
+	normalizeHelius,
 	mergeStats,
 	decodeCurve,
 	decodeLaunchlab,
@@ -27,6 +28,16 @@ assert.equal(normalizeDex({ pairs: [{ ...pair, baseToken: { address: "other" }, 
 assert.equal(normalizeDex({ pairs: [pair] }, mint).volume24hUsd, 0);
 assert.equal(normalizeStonk({ data: { token: { mint: "wrong", market: { priceUsd: 1 } } } }, mint), null);
 assert.equal(normalizeBirdeye({ success: false, data: { address: mint, price: 1 } }, mint), null);
+const helius = normalizeHelius({
+	result: {
+		id: mint,
+		content: { metadata: { name: "Wrapped SOL", symbol: "SOL" } },
+		token_info: { supply: 1000000000, decimals: 9 },
+	},
+}, mint);
+assert.equal(helius.name, "Wrapped SOL");
+assert.equal(helius.supply, 1);
+assert.equal(normalizeHelius({ result: { id: "wrong" } }, mint), null);
 
 const bird = normalizeBirdeye({
 	success: true,
