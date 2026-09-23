@@ -89,7 +89,7 @@ function updateAndFlashElement(elementId, newValue, oldValue, formatter = (value
 
 function updateDisplayWithData(data, callback) {
 	const money = (value) => value == null ? "--" : "$" + value.toLocaleString("en-US", { maximumFractionDigits: 2 });
-	text("token-name", data.name || "MEME MAN");
+	text("token-name", data.name || "STONK");
 	text("token-volume", money(data.volume24hUsd));
 	text("token-change", data.change24hPercent == null ? "--" : data.change24hPercent.toFixed(2) + "%");
 	text("price-only-value", data.priceUsd == null ? "--" : "$" + data.priceUsd.toLocaleString("en-US", { maximumSignificantDigits: 8 }));

@@ -29,7 +29,7 @@ const source = fs.readFileSync(require.resolve('../public/js/data.js'), 'utf8')
   .replace(/^export \{[^}]+\};?$/gm, '').replace(/^export /gm, '');
 vm.runInContext(source, context);
 const tick = () => new Promise(resolve => setImmediate(resolve));
-const payload = (address, configUpdatedAt) => ({ address, configUpdatedAt, status: 'ready', name: 'Token', priceUsd: 1, marketCapUsd: null, fdvUsd: 1000,
+const payload = (address, configUpdatedAt) => ({ address, configUpdatedAt, status: 'ready', name: null, priceUsd: 1, marketCapUsd: null, fdvUsd: 1000,
   volume24hUsd: 0, change24hPercent: 0, checkedAt: new Date().toISOString(), fieldSources: { fdvUsd: 'LaunchLab on-chain' } });
 
 (async () => {
@@ -49,6 +49,7 @@ const payload = (address, configUpdatedAt) => ({ address, configUpdatedAt, statu
   await refreshed;
   await tick();
   assert.equal(node('taskbar-ca').textContent, 'CA: new...new', 'server CA must become authoritative after the cache window');
+  assert.equal(node('token-name').textContent, 'STONK');
   assert.equal(node('valuation-label').textContent, 'FDV');
   assert.equal(node('token-volume').textContent, '$0');
   assert.equal(node('token-change').textContent, '0.00%');
