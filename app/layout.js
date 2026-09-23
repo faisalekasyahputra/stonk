@@ -9,28 +9,28 @@ export const metadata = {
 					? `https://${process.env.VERCEL_URL}`
 					: "http://localhost:3000"),
 	),
-	title: "MEME MAN",
+	title: "STONK",
 	description:
-		"Meet MEME MAN whose penis size changes based on token market cap! Watch it grow and shrink in real-time.",
+		"Meet STONK whose penis size changes based on token market cap! Watch it grow and shrink in real-time.",
 	openGraph: {
-		title: "MEME MAN",
+		title: "STONK",
 		description:
-			"Meet MEME MAN whose penis size changes based on token market cap! Watch it grow and shrink in real-time.",
+			"Meet STONK whose penis size changes based on token market cap! Watch it grow and shrink in real-time.",
 		images: [
 			{
 				url: "/assets/og-stonk-market.jpg",
 				width: 1200,
 				height: 630,
-				alt: "MEME MAN holding a stack of cash in an art gallery",
+				alt: "STONK holding a stack of cash in an art gallery",
 			},
 		],
 		type: "website",
 	},
 	twitter: {
 		card: "summary_large_image",
-		title: "MEME MAN",
+		title: "STONK",
 		description:
-			"Meet MEME MAN whose penis size changes based on token market cap! Watch it grow and shrink in real-time.",
+			"Meet STONK whose penis size changes based on token market cap! Watch it grow and shrink in real-time.",
 		images: ["/assets/og-stonk-market.jpg"],
 	},
 };
@@ -56,7 +56,7 @@ export default function RootLayout({ children }) {
 					rel="apple-touch-icon"
 					href="/assets/favico/apple-touch-icon.png"
 				/>
-				<link rel="manifest" href="/assets/favico/site.webmanifest?v=20260911-meme-man" />
+				<link rel="manifest" href="/assets/favico/site.webmanifest?v=20260923-stonk" />
 
 				<link rel="preconnect" href="https://fonts.googleapis.com" />
 				<link
